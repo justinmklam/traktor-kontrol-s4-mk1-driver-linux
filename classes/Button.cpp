@@ -1,4 +1,5 @@
 #include "Button.h"
+#include "MidiHelper.h"
 
 #include <utility>
 
@@ -104,16 +105,11 @@ int Button::handle_event(RtMidiOut *midi_out, int controller_id, bool shift_ch1,
     auto message = UtilsHelper::create_message(shift_ch1, shift_ch2, toggle_ac, toggle_bd, midi_event, value);
 
     logger->debug("[Button::handle_event] Message created!");
-    logger->debug("[Button::handle_event] Sending to MIDI out port....");
+    logger->debug("[Button::handle_event] Enqueuing to async MIDI sender...");
 
-    try{
-      midi_out->sendMessage(&message);
-    }
-    catch (exception &e){
-      logger->error("[Button::handle_event] Error sending message to MIDI out port: {0}", e.what());
-      return -1;
-    }
-    logger->debug("[Button::handle_event] Sent!");
+    MidiHelper::enqueue_message(std::move(message));
+
+    logger->debug("[Button::handle_event] Enqueued!");
   }
 
   return 0;

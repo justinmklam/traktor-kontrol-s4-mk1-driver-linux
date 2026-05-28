@@ -1,4 +1,5 @@
 #include "Jog.h"
+#include "MidiHelper.h"
 
 map<int, Jog *> Jog::jog_mapping = {
         {52, new Jog(52, "JOG WHEEL CH1 / CH3", 0)},
@@ -48,16 +49,11 @@ int Jog::handle_event(RtMidiOut *midi_out, bool shift_ch1, bool shift_ch2, bool 
 
     logger->debug("[Jog::handle_event] Message Channel: {0} Status: {1} Value: {2}", message[0], message[1], message[2]);
     logger->debug("[Jog::handle_event] Message created!");
-    logger->debug("[Jog::handle_event] Sending to MIDI out port....");
+    logger->debug("[Jog::handle_event] Enqueuing to async MIDI sender...");
 
-    try{
-      midi_out->sendMessage(&message);
-    }
-    catch (exception &e){
-      logger->error("[Jog::handle_event] Error sending message to MIDI out port: {0}", e.what());
-      return -1;
-    }
-    logger->debug("[Jog::handle_event] Sent!");
+    MidiHelper::enqueue_message(std::move(message));
+
+    logger->debug("[Jog::handle_event] Enqueued!");
   }
 
   return 0;

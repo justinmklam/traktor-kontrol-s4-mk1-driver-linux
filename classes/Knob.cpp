@@ -1,4 +1,5 @@
 #include "Knob.h"
+#include "MidiHelper.h"
 
 map<int, Knob *> Knob::knob_mapping = {
     {24, new Knob(24, "KNOB MIC VOL FRONT", 0)},
@@ -84,18 +85,11 @@ int Knob::handle_event(RtMidiOut *midi_out, bool shift_ch1, bool shift_ch2, bool
     auto message = UtilsHelper::create_message(shift_ch1, shift_ch2, toggle_ac, toggle_bd, midi_event, value);
 
     logger->debug("[Knob::handle_event] Message created!");
-    logger->debug("[Knob::handle_event] Sending to MIDI Outport....");
-    logger->debug("[Knob::handle_event] Message {0} - {1} - {2}....", message[0], message[1], message[2]);
+    logger->debug("[Knob::handle_event] Enqueuing to async MIDI sender...");
 
-    try{
-      midi_out->sendMessage(&message);
-    }
-    catch (exception &e){
-      logger->error("[Knob::handle_event] Error sending message to MIDI out port: {0}", e.what());
-      return -1;
-    }
+    MidiHelper::enqueue_message(std::move(message));
 
-    logger->debug("[Knob::handle_event] Sent!");
+    logger->debug("[Knob::handle_event] Enqueued!");
 
     return 0;
   }

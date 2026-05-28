@@ -1,4 +1,5 @@
 #include "Slider.h"
+#include "MidiHelper.h"
 
 map<int, Slider *> Slider::sliders_mapping = {
         {16, new Slider(16, "SLIDER VOLUME CH4", 0)},
@@ -33,17 +34,11 @@ int Slider::handle_event(RtMidiOut *midi_out, bool shift_ch1, bool shift_ch2, bo
     auto message = UtilsHelper::create_message(shift_ch1, shift_ch2, toggle_ac, toggle_bd, midi_event, value);
 
     logger->debug("[Slider::handle_event] Message created!");
-    logger->debug("[Slider::handle_event] Sending to MIDI out port....");
+    logger->debug("[Slider::handle_event] Enqueuing to async MIDI sender...");
 
-    try{
-      midi_out->sendMessage(&message);
-    }
-    catch (exception &e){
-      logger->error("[Slider::handle_event] Error sending message to MIDI out port: {0}", e.what());
-      return -1;
-    }
+    MidiHelper::enqueue_message(std::move(message));
 
-    logger->debug("[Slider::handle_event] Sent!");
+    logger->debug("[Slider::handle_event] Enqueued!");
   }
   return 0;
 }

@@ -2,6 +2,13 @@
 
 using namespace std;
 
+std::queue<std::vector<unsigned char>> MidiHelper::s_midi_out_queue;
+std::mutex MidiHelper::s_midi_out_queue_mutex;
+std::condition_variable MidiHelper::s_midi_out_queue_cv;
+std::thread MidiHelper::s_midi_out_thread;
+std::atomic<bool> MidiHelper::s_midi_out_running{false};
+RtMidiOut *MidiHelper::s_pMidiOut = nullptr;
+
 class callbackData{
  public:
   int traktor_device_id = 0;
@@ -34,11 +41,62 @@ MidiHelper::MidiHelper(ConfigHelper *config){
 
       pMidiOut = new RtMidiOut(RtMidi::UNSPECIFIED, config->get_string_value("midi_client_name"));
       pMidiOut->openVirtualPort(config->get_string_value("midi_virtual_port_name"));
+
+      s_pMidiOut = pMidiOut;
+      s_midi_out_running = true;
+      s_midi_out_thread = std::thread(&MidiHelper::midi_out_sender_loop);
   }
   catch ( RtMidiError &error ) {
     logger->error("[RtMidiHelper::RtMidiHelper] RtMidi Error: {0}", error.getMessage());
       exit(EXIT_FAILURE);
   }
+}
+
+MidiHelper::~MidiHelper(){
+  s_midi_out_running = false;
+  s_midi_out_queue_cv.notify_all();
+  if (s_midi_out_thread.joinable()){
+    s_midi_out_thread.join();
+  }
+  if (pMidiOut){
+    pMidiOut->closePort();
+    delete pMidiOut;
+  }
+  if (pMidiIn){
+    pMidiIn->closePort();
+    delete pMidiIn;
+  }
+}
+
+void MidiHelper::midi_out_sender_loop(){
+  while (s_midi_out_running){
+    std::vector<unsigned char> message;
+    {
+      std::unique_lock<std::mutex> lock(s_midi_out_queue_mutex);
+      s_midi_out_queue_cv.wait(lock, []{ return !s_midi_out_queue.empty() || !s_midi_out_running; });
+      if (!s_midi_out_running && s_midi_out_queue.empty()){
+        return;
+      }
+      message = std::move(s_midi_out_queue.front());
+      s_midi_out_queue.pop();
+    }
+    if (s_pMidiOut){
+      try{
+        s_pMidiOut->sendMessage(&message);
+      }
+      catch (exception &e){
+        spdlog::error("[MidiHelper::midi_out_sender_loop] Error sending MIDI: {0}", e.what());
+      }
+    }
+  }
+}
+
+void MidiHelper::enqueue_message(std::vector<unsigned char> message){
+  {
+    std::lock_guard<std::mutex> lock(s_midi_out_queue_mutex);
+    s_midi_out_queue.push(std::move(message));
+  }
+  s_midi_out_queue_cv.notify_one();
 }
 
 [[maybe_unused]] bool MidiHelper::close_input_port() const

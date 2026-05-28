@@ -13,6 +13,8 @@ var syncSamplers = true; // Flag for turning on/off sync on all samplers
 var deck_ac_current = "A";
 var deck_bd_current = "B";
 const beatJumps = [0.03125, 0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64] //Available beat loop
+var lastJogTime = [0, 0, 0, 0, 0]; // Throttle timestamps for jog wheels (index by deck number)
+var JOG_THROTTLE_MS = 10; // Minimum ms between jog wheel events
 
 function TraktorKontrolS4mk1() {}
 
@@ -481,6 +483,13 @@ TraktorKontrolS4mk1.wheelTouch = function(channel, control, value, status, group
 
 // The wheel that actually controls the scratching
 TraktorKontrolS4mk1.wheelTurn = function(channel, control, value, status, group) {
+    var deckNumber = script.deckFromGroup(group);
+    var now = Date.now();
+    if (now - lastJogTime[deckNumber] < JOG_THROTTLE_MS) {
+        return;
+    }
+    lastJogTime[deckNumber] = now;
+
     // --- Choose only one of the following!
 
     // A: For a control that centers on 0:

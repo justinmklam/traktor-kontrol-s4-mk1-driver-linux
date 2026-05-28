@@ -7,6 +7,11 @@
 #include <string>
 #include <rtmidi/RtMidi.h>
 #include <sstream>
+#include <queue>
+#include <mutex>
+#include <thread>
+#include <atomic>
+#include <condition_variable>
 // --------------------------
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
@@ -33,13 +38,23 @@ class MidiHelper
                                                       void *user_data);
     ConfigHelper *config_helper;
 
+    static std::queue<std::vector<unsigned char>> s_midi_out_queue;
+    static std::mutex s_midi_out_queue_mutex;
+    static std::condition_variable s_midi_out_queue_cv;
+    static std::thread s_midi_out_thread;
+    static std::atomic<bool> s_midi_out_running;
+    static RtMidiOut *s_pMidiOut;
+    static void midi_out_sender_loop();
+
  public:
     MidiHelper(ConfigHelper *config);
+    ~MidiHelper();
     RtMidiOut *pMidiOut = 0;
     RtMidiIn *pMidiIn = 0;
     [[maybe_unused]] bool close_input_port() const;
     [[maybe_unused]] bool close_output_port() const;
     static void show_midi_information(MidiHelper *midi_helper, ConfigHelper *config);
+    static void enqueue_message(std::vector<unsigned char> message);
     int traktor_device_id;
 };
 
