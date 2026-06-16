@@ -1,0 +1,21 @@
+# deck_toggle_with_jog.txt
+# Test: Deck toggle (CH1/CH3 = code 264) while jog events arrive.
+# - First event: toggle AC decks (code 264, value 1)
+# - Jog event arrives during toggle (code 52, jog wheel turn)
+# - Second toggle (code 264, value 1) to restore
+# - Jog CH1 press (code 26)
+# This exercises the blocking LED write path during toggle + jog throughput.
+#
+# Expected states:
+#   ev0: toggle_ac = true (LED bulk writes captured)
+#   ev1: jog turn translated with toggle_ac=true (uses CH3/CH1 routing)
+#   ev2: toggle_ac = false (LED bulk writes captured)
+#   ev3: jog touch translated with toggle_ac=false
+# Toggle AC on
+1 264 1
+# Jog turn while in toggled state
+3 52 128
+# Toggle AC off (back to decks A/C)
+1 264 1
+# Jog touch press
+3 26 4095

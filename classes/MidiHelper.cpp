@@ -1,4 +1,5 @@
 #include "MidiHelper.h"
+#include "PerfCounters.h"
 
 using namespace std;
 
@@ -82,7 +83,9 @@ void MidiHelper::midi_out_sender_loop(){
     }
     if (s_pMidiOut){
       try{
+        auto t_send = PerfCounters::now();
         s_pMidiOut->sendMessage(&message);
+        PerfCounters::record("midi_sendMessage", t_send);
       }
       catch (exception &e){
         spdlog::error("[MidiHelper::midi_out_sender_loop] Error sending MIDI: {0}", e.what());
@@ -120,6 +123,7 @@ RtMidiErrorCallback MidiHelper::midi_in_error_callback(RtMidiError::Type type, c
 }
 
 RtMidiIn::RtMidiCallback MidiHelper::midi_in_callback(double deltatime, std::vector<unsigned char> *message, void *userData){
+    PERF_SCOPE("midi_in_callback");
     auto* data = reinterpret_cast<callbackData *>(userData);
     unsigned char channel = message->at(0);
     unsigned char status = message->at(1);

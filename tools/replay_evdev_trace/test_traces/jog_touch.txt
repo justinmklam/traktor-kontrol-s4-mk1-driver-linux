@@ -1,0 +1,14 @@
+# jog_touch.txt
+# Test: CH1 jog touch press and release (code 26, EV_ABS=3)
+# Touch threshold: value >= 3050 → pressed (0x7f), < 3050 → not pressed
+# Note: Current Jog.cpp doesn't have edge detection, so every event
+# with value >= 3050 emits 0x7f, and below emits 0x00.
+# Expected: MIDI message 0xb0 0x03 0x7f for press,
+#           MIDI message 0xb0 0x03 0x00 for release.
+# Press
+3 26 4095
+# Hold (value stays high) — currently emits 0x7f each time
+3 26 4095
+3 26 4095
+# Release
+3 26 0

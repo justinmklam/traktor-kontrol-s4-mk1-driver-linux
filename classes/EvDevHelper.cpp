@@ -1,5 +1,6 @@
 #include <iostream>
 #include "EvDevHelper.h"
+#include "PerfCounters.h"
 
 using namespace std;
 
@@ -101,8 +102,11 @@ void EvDevHelper::read_events_from_device(RtMidiOut *pMidiOut) {
            libevdev_get_id_vendor(dev),
            libevdev_get_id_product(dev));
     do {
+        PERF_SCOPE("evdev_process_event");
         struct input_event ev{};
+        auto t_read = PerfCounters::now();
         rc = libevdev_next_event(dev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
+        PerfCounters::record("evdev_next_event", t_read);
         if (rc >= 0){
             if (ev.code == config_helper->get_int_value("alsa_device_shift_ch1_value")){ // SHIFT CH1
               shift_ch1 = !shift_ch1;
@@ -113,6 +117,7 @@ void EvDevHelper::read_events_from_device(RtMidiOut *pMidiOut) {
               continue;
             }
             if ((ev.code == config_helper->get_int_value("alsa_device_toggle_ac_value")) && (ev.value == 1)){ // TOGGLE CH1 / CH3
+              auto t_toggle = PerfCounters::now();
               toggle_ac = !toggle_ac;
               if (toggle_ac){
                 int to_on[] = { 75, 87, 40, 41, 49 };
@@ -130,10 +135,12 @@ void EvDevHelper::read_events_from_device(RtMidiOut *pMidiOut) {
                 AlsaHelper::bulk_led_value(traktor_device_id_, to_low, Led::MIDDLE, 1, config_helper);
                 AlsaHelper::bulk_led_value(traktor_device_id_, to_off, Led::OFF, 4, config_helper);
               }
+              PerfCounters::record("toggle_ac_leds", t_toggle);
               logger->debug("[EvDevHelper::read_events_from_device] Deck toggle AC Changed: {0}", toggle_ac);
               continue;
             }
             if ((ev.code == config_helper->get_int_value("alsa_device_toggle_bd_value")) && (ev.value == 1)){ // TOGGLE CH2 / CH4
+              auto t_toggle = PerfCounters::now();
               toggle_bd = !toggle_bd;
               if (toggle_bd){
                 int to_on[] = { 53, 54, 62, 131, 119 };
@@ -149,6 +156,7 @@ void EvDevHelper::read_events_from_device(RtMidiOut *pMidiOut) {
                 AlsaHelper::bulk_led_value(traktor_device_id_, to_low, Led::MIDDLE, 1, config_helper);
                 AlsaHelper::bulk_led_value(traktor_device_id_, to_off, Led::OFF, 4, config_helper);
               }
+              PerfCounters::record("toggle_bd_leds", t_toggle);
               logger->debug("[EvDevHelper::read_events_from_device] Deck toggle BD Changed: {0}", toggle_bd);
               continue;
             }
@@ -172,8 +180,10 @@ void EvDevHelper::read_events_from_device(RtMidiOut *pMidiOut) {
                             ev.time.tv_sec);
             }
 
+            auto t_translate = PerfCounters::now();
             auto *evdev_event = new EvDevEvent(ev.type, ev.code, ev.value, ev.time);
             evdev_event->handle_with(pMidiOut, traktor_device_id_, shift_ch1, shift_ch2, toggle_ac, toggle_bd, config_helper);
+            PerfCounters::record("evdev_translate_and_enqueue", t_translate);
         }
     } while (rc == 1 || rc == 0 || rc == -EAGAIN);
 }

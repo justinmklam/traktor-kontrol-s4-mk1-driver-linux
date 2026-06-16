@@ -7,7 +7,9 @@
 #include <iostream>
 #include <cstdlib>
 // --------------------------
+#ifndef REPLAY_MODE
 #include "EvDevHelper.h"
+#endif
 #include "MidiHelper.h"
 
 using namespace std;

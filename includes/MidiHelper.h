@@ -5,7 +5,24 @@
 #include <iostream>
 #include <cstdlib>
 #include <string>
+#ifndef REPLAY_MODE
 #include <rtmidi/RtMidi.h>
+#else
+// Stub types needed by translation code when linking without RtMidi
+struct RtMidiOut {};
+struct RtMidiIn {
+    using RtMidiCallback = void*;
+};
+using RtMidiErrorCallback = void*;
+namespace RtMidi {
+    enum Api { UNSPECIFIED };
+}
+class RtMidiError : public std::exception {
+public:
+    std::string getMessage() const { return "stub"; }
+    enum Type { WARNING };
+};
+#endif
 #include <sstream>
 #include <queue>
 #include <mutex>
@@ -20,7 +37,9 @@
 #include "Jog.h"
 #include "Knob.h"
 #include "Led.h"
+#ifndef REPLAY_MODE
 #include "EvDevHelper.h"
+#endif
 #include "UtilsHelper.h"
 #include "MidiEventIn.h"
 #include "ConfigHelper.h"

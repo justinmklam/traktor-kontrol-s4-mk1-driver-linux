@@ -1,0 +1,6 @@
+# cue_press.txt
+# Test: CH1_CUE button (code 261) press and release
+# EV_KEY=1, value 1=press, 0=release
+# Expected: MIDI message 0xb0 0x09 0x01 on press
+1 261 1
+1 261 0

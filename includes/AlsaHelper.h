@@ -4,8 +4,14 @@
 // --------------------------
 #include <string>
 #include <mutex>
+#ifndef REPLAY_MODE
 #include <rtaudio/RtAudio.h>
 #include <alsa/asoundlib.h>
+#else
+// Stub types for replay mode (no ALSA dependency)
+struct snd_ctl;
+typedef snd_ctl snd_ctl_t;
+#endif
 // --------------------------
 #include "Led.h"
 #include "spdlog/spdlog.h"

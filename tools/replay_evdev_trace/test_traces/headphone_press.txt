@@ -1,0 +1,6 @@
+# headphone_press.txt
+# Test: CH1_EARPHONES button (code 289) press and release
+# EV_KEY=1, value 1=press, 0=release
+# Expected: MIDI message for CH1 EARPHONES TOGGLE (0x44 0xb0 ...)
+1 289 1
+1 289 0

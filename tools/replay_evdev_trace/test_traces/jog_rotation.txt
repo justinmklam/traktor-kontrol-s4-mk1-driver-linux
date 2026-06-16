@@ -1,0 +1,25 @@
+# jog_rotation.txt
+# Test: Sustained CH1 jog wheel rotation (code 52, EV_ABS=3)
+# Jog range: 0-1023, wraps at 255/767. Sensitivity hardcoded at 5ms.
+# This trace delivers rapid samples simulating a moderate turn.
+# Each value increases by ~32 (one "click" worth).
+# Expected: accumulated MIDI jog messages (status 0x02, channel 0xb0)
+# after the 5ms timing window elapses.
+3 52 0
+3 52 32
+3 52 64
+3 52 96
+3 52 128
+3 52 160
+3 52 192
+3 52 224
+# Cross the 255 boundary (wraparound region) — continues up
+3 52 256
+3 52 288
+3 52 320
+3 52 352
+3 52 384
+3 52 416
+3 52 448
+3 52 480
+3 52 512

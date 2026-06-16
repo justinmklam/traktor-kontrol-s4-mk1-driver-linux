@@ -1,4 +1,5 @@
 #include "AlsaHelper.h"
+#include "PerfCounters.h"
 
 snd_ctl_t *AlsaHelper::s_ctl = nullptr;
 int AlsaHelper::s_card_id = -1;
@@ -39,6 +40,7 @@ void AlsaHelper::close_ctl(ConfigHelper *config_helper){
 }
 
 int AlsaHelper::set_led_value(int card_id, int control_id, int led_value, ConfigHelper *config_helper){
+    PERF_SCOPE("alsa_set_led_value");
     shared_ptr<spdlog::logger> logger = spdlog::get(config_helper->get_string_value("traktor_s4_logger_name"));
     logger->debug("[AlsaHelper::set_led_value] Setting value {0} to Led with id {1} with value {2}...", to_string(card_id), to_string(control_id), to_string(led_value));
     if (control_id == 0){
@@ -67,7 +69,9 @@ int AlsaHelper::set_led_value(int card_id, int control_id, int led_value, Config
     snd_ctl_elem_value_set_interface(value, SND_CTL_ELEM_IFACE_MIXER);
     snd_ctl_elem_value_set_numid(value, control_id);
     snd_ctl_elem_value_set_integer(value, 0, led_value);
+    auto t_write = PerfCounters::now();
     logger->debug("[AlsaHelper::set_led_value] snd_ctl_elem_write returns {0}", snd_ctl_elem_write(s_ctl, value));
+    PerfCounters::record("alsa_snd_ctl_elem_write", t_write);
 
     logger->debug("[AlsaHelper::set_led_value] FINISHED");
     return 0;

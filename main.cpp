@@ -8,6 +8,7 @@
 #include "includes/UtilsHelper.h"
 #include "includes/ConfigHelper.h"
 #include "includes/AlsaHelper.h"
+#include "includes/PerfCounters.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/async.h"
 
@@ -39,6 +40,7 @@ bool delete_pid_file()
 
 void shutdown_application(int signum)
 {
+  PerfCounters::report();
   EvDevHelper::shutdown_buttons_leds(::config_helper);
   AlsaHelper::close_ctl(::config_helper);
   delete_pid_file();
