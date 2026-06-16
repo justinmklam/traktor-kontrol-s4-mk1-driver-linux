@@ -7,6 +7,7 @@
 #include "includes/cxxopts.hpp"
 #include "includes/UtilsHelper.h"
 #include "includes/ConfigHelper.h"
+#include "includes/AlsaHelper.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/async.h"
 
@@ -39,6 +40,7 @@ bool delete_pid_file()
 void shutdown_application(int signum)
 {
   EvDevHelper::shutdown_buttons_leds(::config_helper);
+  AlsaHelper::close_ctl(::config_helper);
   delete_pid_file();
   exit(signum);
 }

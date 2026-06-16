@@ -1,5 +1,43 @@
 #include "AlsaHelper.h"
 
+snd_ctl_t *AlsaHelper::s_ctl = nullptr;
+int AlsaHelper::s_card_id = -1;
+std::mutex AlsaHelper::s_ctl_mutex;
+
+void AlsaHelper::init_ctl(int card_id, ConfigHelper *config_helper){
+    shared_ptr<spdlog::logger> logger = spdlog::get(config_helper->get_string_value("traktor_s4_logger_name"));
+    std::lock_guard<std::mutex> lock(s_ctl_mutex);
+
+    if (s_ctl != nullptr){
+        logger->warn("[AlsaHelper::init_ctl] ALSA ctl handle already open, closing first");
+        snd_ctl_close(s_ctl);
+        s_ctl = nullptr;
+    }
+
+    string control_name = "hw:" + to_string(card_id);
+    if (snd_ctl_open(&s_ctl, control_name.c_str(), SND_CTL_NONBLOCK) < 0){
+        logger->error("[AlsaHelper::init_ctl] Failed to open ALSA ctl handle for {0}", control_name);
+        s_ctl = nullptr;
+        return;
+    }
+
+    s_card_id = card_id;
+    logger->info("[AlsaHelper::init_ctl] ALSA ctl handle opened for {0}", control_name);
+}
+
+void AlsaHelper::close_ctl(ConfigHelper *config_helper){
+    shared_ptr<spdlog::logger> logger = spdlog::get(config_helper->get_string_value("traktor_s4_logger_name"));
+    std::lock_guard<std::mutex> lock(s_ctl_mutex);
+
+    if (s_ctl != nullptr){
+        snd_ctl_close(s_ctl);
+        s_ctl = nullptr;
+        logger->info("[AlsaHelper::close_ctl] ALSA ctl handle closed");
+    }
+
+    s_card_id = -1;
+}
+
 int AlsaHelper::set_led_value(int card_id, int control_id, int led_value, ConfigHelper *config_helper){
     shared_ptr<spdlog::logger> logger = spdlog::get(config_helper->get_string_value("traktor_s4_logger_name"));
     logger->debug("[AlsaHelper::set_led_value] Setting value {0} to Led with id {1} with value {2}...", to_string(card_id), to_string(control_id), to_string(led_value));
@@ -13,23 +51,24 @@ int AlsaHelper::set_led_value(int card_id, int control_id, int led_value, Config
       return -1;
     }
 
-    snd_ctl_t *ctl;
     snd_ctl_elem_value_t *value;
+
+    std::lock_guard<std::mutex> lock(s_ctl_mutex);
+
+    if (s_ctl == nullptr){
+      logger->error("[AlsaHelper::set_led_value] ALSA ctl handle not initialized");
+      return -1;
+    }
 
     string control_name = "hw:" + to_string(card_id);
     logger->debug("[AlsaHelper::set_led_value] Controller name: {0}", control_name);
-    if (snd_ctl_open(&ctl, control_name.c_str(), SND_CTL_NONBLOCK) < 0) {
-      logger->error("[AlsaHelper::set_led_value] snd_ctl_open Control Name: {0} Control ID: {1}", control_name, control_id);
-      return -1;
-    }
 
     snd_ctl_elem_value_alloca(&value);
     snd_ctl_elem_value_set_interface(value, SND_CTL_ELEM_IFACE_MIXER);
     snd_ctl_elem_value_set_numid(value, control_id);
     snd_ctl_elem_value_set_integer(value, 0, led_value);
-    logger->debug("[AlsaHelper::set_led_value] snd_ctl_elem_write returns {0}", snd_ctl_elem_write(ctl, value));
+    logger->debug("[AlsaHelper::set_led_value] snd_ctl_elem_write returns {0}", snd_ctl_elem_write(s_ctl, value));
 
-    snd_ctl_close(ctl);
     logger->debug("[AlsaHelper::set_led_value] FINISHED");
     return 0;
 }

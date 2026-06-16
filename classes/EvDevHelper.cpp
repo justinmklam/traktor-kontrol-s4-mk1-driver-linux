@@ -17,6 +17,7 @@ EvDevHelper::EvDevHelper(ConfigHelper *config){
     logger->error("[EvDevHelper:EvDevHelper] {0} Device not found.... Bye!", config_helper->get_string_value("alsa_device_name"));
     exit(EXIT_FAILURE);
   }
+  AlsaHelper::init_ctl(traktor_device_id_, config_helper);
 }
 
 vector<string> EvDevHelper::get_evdev_device(){
