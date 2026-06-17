@@ -19,6 +19,13 @@ EvDevHelper::EvDevHelper(ConfigHelper *config){
     exit(EXIT_FAILURE);
   }
   AlsaHelper::init_ctl(traktor_device_id_, config_helper);
+
+  // Open evdev device once and store as member
+  if (!open_evdev_device()) {
+    logger->error("[EvDevHelper:EvDevHelper] Failed to open evdev controller device");
+    exit(EXIT_FAILURE);
+  }
+  logger->debug("[EvDevHelper:EvDevHelper] evdev device opened successfully");
 }
 
 vector<string> EvDevHelper::get_evdev_device(){
@@ -48,144 +55,187 @@ tuple<int, struct libevdev *> EvDevHelper::get_traktor_controller_device(){
             int evdev = libevdev_new_from_fd(fd, &dev);
             if (evdev < 0) {
               logger->error("[EvDevHelper::get_traktor_controller_device] Failed to init libevdev ({0})", strerror(-evdev));
-                exit(EXIT_FAILURE);
+                close(fd);
+                continue;
             }
             if ((libevdev_get_id_vendor(dev) == 0x17cc) && (libevdev_get_id_product(dev) == 0xbaff)){
               logger->debug("[EvDevHelper::get_traktor_controller_device] Found {1} Device: {0}", libevdev_get_name(dev), config_helper->get_string_value("alsa_device_name"));
                 return make_tuple(evdev, dev);
             }
+            // Not the Traktor device — clean up and continue
+            libevdev_free(dev);
+            dev = nullptr;
+            close(fd);
         }
         catch (const evdevw::Exception &e) {
           logger->error("[EvDevHelper::get_traktor_controller_device] Error Reading: {0} Error: {1}", file, strerror(e.get_error()));
+          close(fd);
         }
     }
     logger->debug("[EvDevHelper::get_traktor_controller_device] Finished");
     return make_tuple(-1, dev);
 }
 
-void EvDevHelper::check_evdev_status(){
-  shared_ptr<spdlog::logger> logger = spdlog::get(config_helper->get_string_value("traktor_s4_logger_name"));
-  struct libevdev *dev = nullptr;
-  int rc = 1;
-
-  tie(rc, dev) = get_traktor_controller_device();
-  if (rc < 0) {
-    logger->error("[EvDevHelper::check_evdev_status] Failed to init evdev device: {0}", strerror(-rc));
-    exit(EXIT_FAILURE);
-  }
-
-  do{
-    struct input_event ev{};
-    rc = libevdev_next_event(dev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
-    logger->debug("[EvDevHelper::check_evdev_status] Check evdev Status: {0}", rc);
-
-    usleep(this->config_helper->get_int_value("evdev_helper_time_to_wait_in_microseconds"));
-  } while(rc != 1 && rc != 0 && rc != -EAGAIN);
-
-  logger->debug("[EvDevHelper::check_evdev_status] evdev device started!");
+bool EvDevHelper::open_evdev_device() {
+    auto [rc, dev] = get_traktor_controller_device();
+    if (rc < 0 || dev == nullptr) {
+        return false;
+    }
+    dev_ = dev;
+    fd_ = libevdev_get_fd(dev_);
+    return true;
 }
 
 void EvDevHelper::read_events_from_device(RtMidiOut *pMidiOut) {
+    if (dev_ == nullptr || fd_ < 0) {
+        shared_ptr<spdlog::logger> err_logger = spdlog::get(config_helper->get_string_value("traktor_s4_logger_name"));
+        err_logger->error("[EvDevHelper::read_events_from_device] No evdev device available");
+        return;
+    }
+
     shared_ptr<spdlog::logger> logger = spdlog::get(config_helper->get_string_value("traktor_s4_logger_name"));
     logger->debug("[EvDevHelper::read_events_from_device] Reading events from {0}", config_helper->get_string_value("alsa_device_name"));
-    struct libevdev *dev = nullptr;
-    int rc = 1;
 
-    tie(rc, dev) = get_traktor_controller_device();
-    if (rc < 0) {
-      logger->error("[EvDevHelper::read_events_from_device] Failed to init libevdev (%s)", strerror(-rc));
-        exit(EXIT_FAILURE);
-    }
-    logger->debug("Input device name: {0}", libevdev_get_name(dev));
+    logger->debug("Input device name: {0}", libevdev_get_name(dev_));
     logger->debug("Input device ID: bus {0} vendor {1} product {2}",
-           libevdev_get_id_bustype(dev),
-           libevdev_get_id_vendor(dev),
-           libevdev_get_id_product(dev));
-    do {
-        PERF_SCOPE("evdev_process_event");
-        struct input_event ev{};
-        auto t_read = PerfCounters::now();
-        rc = libevdev_next_event(dev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
-        PerfCounters::record("evdev_next_event", t_read);
-        if (rc >= 0){
-            if (ev.code == config_helper->get_int_value("alsa_device_shift_ch1_value")){ // SHIFT CH1
-              shift_ch1 = !shift_ch1;
-              continue;
-            }
-            if (ev.code == config_helper->get_int_value("alsa_device_shift_ch2_value")){ // SHIFT CH2
-              shift_ch2 = !shift_ch2;
-              continue;
-            }
-            if ((ev.code == config_helper->get_int_value("alsa_device_toggle_ac_value")) && (ev.value == 1)){ // TOGGLE CH1 / CH3
-              auto t_toggle = PerfCounters::now();
-              toggle_ac = !toggle_ac;
-              if (toggle_ac){
-                int to_on[] = { 75, 87, 40, 41, 49 };
-                int to_off[] = { 23, 14, 15, 86 };
+           libevdev_get_id_bustype(dev_),
+           libevdev_get_id_vendor(dev_),
+           libevdev_get_id_product(dev_));
 
-                AlsaHelper::bulk_led_value(traktor_device_id_, to_on, Led::ON, 5, config_helper);
-                AlsaHelper::bulk_led_value(traktor_device_id_, to_off, Led::OFF, 4, config_helper);
-              }
-              else{
-                int to_on[] = { 86, 23, 14, 15 };
-                int to_low[] = { 75 };
-                int to_off[] = { 87, 40, 41, 49 };
+    // Cache config values used in the hot path (see §7a)
+    const int shift_ch1_code = config_helper->get_int_value("alsa_device_shift_ch1_value");
+    const int shift_ch2_code = config_helper->get_int_value("alsa_device_shift_ch2_value");
+    const int toggle_ac_code  = config_helper->get_int_value("alsa_device_toggle_ac_value");
+    const int toggle_bd_code  = config_helper->get_int_value("alsa_device_toggle_bd_value");
 
-                AlsaHelper::bulk_led_value(traktor_device_id_, to_on, Led::ON, 4, config_helper);
-                AlsaHelper::bulk_led_value(traktor_device_id_, to_low, Led::MIDDLE, 1, config_helper);
-                AlsaHelper::bulk_led_value(traktor_device_id_, to_off, Led::OFF, 4, config_helper);
-              }
-              PerfCounters::record("toggle_ac_leds", t_toggle);
-              logger->debug("[EvDevHelper::read_events_from_device] Deck toggle AC Changed: {0}", toggle_ac);
-              continue;
-            }
-            if ((ev.code == config_helper->get_int_value("alsa_device_toggle_bd_value")) && (ev.value == 1)){ // TOGGLE CH2 / CH4
-              auto t_toggle = PerfCounters::now();
-              toggle_bd = !toggle_bd;
-              if (toggle_bd){
-                int to_on[] = { 53, 54, 62, 131, 119 };
-                int to_off[] = { 130, 36, 27, 28 };
-                AlsaHelper::bulk_led_value(traktor_device_id_, to_on, Led::ON, 5, config_helper);
-                AlsaHelper::bulk_led_value(traktor_device_id_, to_off, Led::OFF, 4, config_helper);
-              }
-              else{
-                int to_on[] = { 27, 28, 36, 130 };
-                int to_low[] = { 119 };
-                int to_off[] = { 131, 62, 53, 54 };
-                AlsaHelper::bulk_led_value(traktor_device_id_, to_on, Led::ON, 4, config_helper);
-                AlsaHelper::bulk_led_value(traktor_device_id_, to_low, Led::MIDDLE, 1, config_helper);
-                AlsaHelper::bulk_led_value(traktor_device_id_, to_off, Led::OFF, 4, config_helper);
-              }
-              PerfCounters::record("toggle_bd_leds", t_toggle);
-              logger->debug("[EvDevHelper::read_events_from_device] Deck toggle BD Changed: {0}", toggle_bd);
-              continue;
-            }
-            const char * type_name = libevdev_event_type_get_name(ev.type);
-            const char * code_name = libevdev_event_code_get_name(ev.type, ev.code);
+    struct pollfd pfd = {};
+    pfd.fd = fd_;
+    pfd.events = POLLIN;
 
-            if ((type_name != nullptr) && (code_name != nullptr)){
-              logger->debug("[EvDevHelper::read_events_from_device] Event: TypeName: {0} - CodeName: {1} - Type: {2} - Code: {3} - Value: {4} - Time: {5}",
-                            type_name,
-                            code_name,
-                            ev.type,
-                            ev.code,
-                            ev.value,
-                            ev.time.tv_sec);
-            }
-            else{
-              logger->debug("[EvDevHelper::read_events_from_device] Event: Type: {0} - Code: {1} - Value: {2} - Time: {3}",
-                            ev.type,
-                            ev.code,
-                            ev.value,
-                            ev.time.tv_sec);
-            }
+    running_.store(true, memory_order_relaxed);
 
-            auto t_translate = PerfCounters::now();
-            auto *evdev_event = new EvDevEvent(ev.type, ev.code, ev.value, ev.time);
-            evdev_event->handle_with(pMidiOut, traktor_device_id_, shift_ch1, shift_ch2, toggle_ac, toggle_bd, config_helper);
-            PerfCounters::record("evdev_translate_and_enqueue", t_translate);
+    while (running_.load(memory_order_relaxed)) {
+        PERF_SCOPE("evdev_poll_wait");
+
+        // Block until input is available
+        int ret = poll(&pfd, 1, -1);
+        if (ret < 0) {
+            if (errno == EINTR) {
+                // Interrupted by signal — re-check running flag
+                continue;
+            }
+            logger->error("[EvDevHelper::read_events_from_device] poll() error: {0}", strerror(errno));
+            break;
         }
-    } while (rc == 1 || rc == 0 || rc == -EAGAIN);
+        if (pfd.revents & (POLLERR | POLLHUP | POLLNVAL)) {
+            logger->error("[EvDevHelper::read_events_from_device] Device disconnected or error on fd {0}", fd_);
+            break;
+        }
+
+        // Drain all available events
+        int rc;
+        do {
+            PERF_SCOPE("evdev_process_event");
+            struct input_event ev{};
+            auto t_read = PerfCounters::now();
+            rc = libevdev_next_event(dev_, LIBEVDEV_READ_FLAG_NORMAL, &ev);
+            PerfCounters::record("evdev_next_event", t_read);
+
+            if (rc == LIBEVDEV_READ_STATUS_SYNC) {
+                // SYN_DROPPED occurred: drain sync events and discard them
+                while (rc == LIBEVDEV_READ_STATUS_SYNC) {
+                    rc = libevdev_next_event(dev_, LIBEVDEV_READ_FLAG_SYNC, &ev);
+                }
+                // After sync drain, re-enter normal read
+                continue;
+            }
+
+            if (rc == LIBEVDEV_READ_STATUS_SUCCESS) {
+                // §12: Skip EV_SYN events early — they carry no actionable data
+                if (ev.type == EV_SYN) continue;
+
+                if (ev.code == shift_ch1_code){ // SHIFT CH1
+                  shift_ch1 = !shift_ch1;
+                  continue;
+                }
+                if (ev.code == shift_ch2_code){ // SHIFT CH2
+                  shift_ch2 = !shift_ch2;
+                  continue;
+                }
+                if ((ev.code == toggle_ac_code) && (ev.value == 1)){ // TOGGLE CH1 / CH3
+                  auto t_toggle = PerfCounters::now();
+                  toggle_ac = !toggle_ac;
+                  if (toggle_ac){
+                    int to_on[] = { 75, 87, 40, 41, 49 };
+                    int to_off[] = { 23, 14, 15, 86 };
+
+                    AlsaHelper::bulk_led_value(traktor_device_id_, to_on, Led::ON, 5, config_helper);
+                    AlsaHelper::bulk_led_value(traktor_device_id_, to_off, Led::OFF, 4, config_helper);
+                  }
+                  else{
+                    int to_on[] = { 86, 23, 14, 15 };
+                    int to_low[] = { 75 };
+                    int to_off[] = { 87, 40, 41, 49 };
+
+                    AlsaHelper::bulk_led_value(traktor_device_id_, to_on, Led::ON, 4, config_helper);
+                    AlsaHelper::bulk_led_value(traktor_device_id_, to_low, Led::MIDDLE, 1, config_helper);
+                    AlsaHelper::bulk_led_value(traktor_device_id_, to_off, Led::OFF, 4, config_helper);
+                  }
+                  PerfCounters::record("toggle_ac_leds", t_toggle);
+                  logger->debug("[EvDevHelper::read_events_from_device] Deck toggle AC Changed: {0}", toggle_ac);
+                  continue;
+                }
+                if ((ev.code == toggle_bd_code) && (ev.value == 1)){ // TOGGLE CH2 / CH4
+                  auto t_toggle = PerfCounters::now();
+                  toggle_bd = !toggle_bd;
+                  if (toggle_bd){
+                    int to_on[] = { 53, 54, 62, 131, 119 };
+                    int to_off[] = { 130, 36, 27, 28 };
+                    AlsaHelper::bulk_led_value(traktor_device_id_, to_on, Led::ON, 5, config_helper);
+                    AlsaHelper::bulk_led_value(traktor_device_id_, to_off, Led::OFF, 4, config_helper);
+                  }
+                  else{
+                    int to_on[] = { 27, 28, 36, 130 };
+                    int to_low[] = { 119 };
+                    int to_off[] = { 131, 62, 53, 54 };
+                    AlsaHelper::bulk_led_value(traktor_device_id_, to_on, Led::ON, 4, config_helper);
+                    AlsaHelper::bulk_led_value(traktor_device_id_, to_low, Led::MIDDLE, 1, config_helper);
+                    AlsaHelper::bulk_led_value(traktor_device_id_, to_off, Led::OFF, 4, config_helper);
+                  }
+                  PerfCounters::record("toggle_bd_leds", t_toggle);
+                  logger->debug("[EvDevHelper::read_events_from_device] Deck toggle BD Changed: {0}", toggle_bd);
+                  continue;
+                }
+
+#ifndef NDEBUG
+                const char * type_name = libevdev_event_type_get_name(ev.type);
+                const char * code_name = libevdev_event_code_get_name(ev.type, ev.code);
+
+                if ((type_name != nullptr) && (code_name != nullptr)){
+                  logger->debug("[EvDevHelper::read_events_from_device] Event: TypeName: {0} - CodeName: {1} - Type: {2} - Code: {3} - Value: {4} - Time: {5}",
+                                type_name,
+                                code_name,
+                                ev.type,
+                                ev.code,
+                                ev.value,
+                                ev.time.tv_sec);
+                }
+                else{
+                  logger->debug("[EvDevHelper::read_events_from_device] Event: Type: {0} - Code: {1} - Value: {2} - Time: {3}",
+                                ev.type,
+                                ev.code,
+                                ev.value,
+                                ev.time.tv_sec);
+                }
+#endif
+
+                auto t_translate = PerfCounters::now();
+                auto *evdev_event = new EvDevEvent(ev.type, ev.code, ev.value, ev.time);
+                evdev_event->handle_with(pMidiOut, traktor_device_id_, shift_ch1, shift_ch2, toggle_ac, toggle_bd, config_helper);
+                PerfCounters::record("evdev_translate_and_enqueue", t_translate);
+            }
+        } while (rc == LIBEVDEV_READ_STATUS_SUCCESS);
+    }
 }
 
 void EvDevHelper::initialize_buttons_leds(ConfigHelper *config_helper){

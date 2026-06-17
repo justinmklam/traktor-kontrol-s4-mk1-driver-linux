@@ -90,9 +90,6 @@ static void init_application() {
   logger->info("[main::init_application] Get MIDI information....");
   MidiHelper::show_midi_information(rtmidi_helper, config_helper);
 
-  logger->info("[main::init_application] Initializing EvDev device....");
-  evdev_helper->check_evdev_status();
-
   logger->info("[main::init_application] Initializing leds....");
   evdev_helper->initialize_buttons_leds(config_helper);
 
