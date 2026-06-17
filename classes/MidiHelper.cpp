@@ -1,9 +1,10 @@
 #include "MidiHelper.h"
 #include "PerfCounters.h"
+#include "LedWriter.h"
 
 using namespace std;
 
-std::queue<std::vector<unsigned char>> MidiHelper::s_midi_out_queue;
+std::deque<std::vector<unsigned char>> MidiHelper::s_midi_out_queue;
 std::mutex MidiHelper::s_midi_out_queue_mutex;
 std::condition_variable MidiHelper::s_midi_out_queue_cv;
 std::thread MidiHelper::s_midi_out_thread;
@@ -13,20 +14,18 @@ RtMidiOut *MidiHelper::s_pMidiOut = nullptr;
 class callbackData{
  public:
   int traktor_device_id = 0;
-  bool shift_ch1 = false;
-  bool shift_ch2 = false;
-  bool toggle_ac = false;
-  bool toggle_bd = false;
   ConfigHelper *config{};
+  LedWriter *led_writer = nullptr;
 };
 
-MidiHelper::MidiHelper(ConfigHelper *config){
+MidiHelper::MidiHelper(ConfigHelper *config, int traktor_dev_id, LedWriter *led_writer){
   shared_ptr<spdlog::logger> logger = spdlog::get(config->get_string_value("traktor_s4_logger_name"));
-  this->config_helper = config;
+  config_helper = config;
+  led_writer_ = led_writer;
   try {
-      traktor_device_id = AlsaHelper::get_traktor_device(config);
+      traktor_device_id = traktor_dev_id;
       if (traktor_device_id == -1){
-        logger->error("[EvDevHelper:EvDevHelper] Traktor Kontrol S4 Device not found.... Bye!");
+        logger->error("[MidiHelper] Traktor Kontrol S4 Device not found.... Bye!");
         exit(EXIT_FAILURE);
       }
       pMidiIn = new RtMidiIn(RtMidi::UNSPECIFIED, config->get_string_value("midi_client_name"), config->get_int_value("midi_queue_size_limit"));
@@ -36,6 +35,7 @@ MidiHelper::MidiHelper(ConfigHelper *config){
       auto *data = new callbackData();
       data->traktor_device_id = traktor_device_id;
       data->config = config;
+      data->led_writer = led_writer;
 
       pMidiIn->setErrorCallback(reinterpret_cast<RtMidiErrorCallback>(midi_in_error_callback), (void *) data);
       pMidiIn->setCallback(reinterpret_cast<RtMidiIn::RtMidiCallback>(midi_in_callback), (void *) data);
@@ -79,7 +79,7 @@ void MidiHelper::midi_out_sender_loop(){
         return;
       }
       message = std::move(s_midi_out_queue.front());
-      s_midi_out_queue.pop();
+      s_midi_out_queue.pop_front();
     }
     if (s_pMidiOut){
       try{
@@ -88,16 +88,32 @@ void MidiHelper::midi_out_sender_loop(){
         PerfCounters::record("midi_sendMessage", t_send);
       }
       catch (exception &e){
-        spdlog::error("[MidiHelper::midi_out_sender_loop] Error sending MIDI: {0}", e.what());
+        auto logger = spdlog::get("traktor_kontrol_s4_logger");
+        if (logger) logger->error("[MidiHelper::midi_out_sender_loop] Error sending MIDI: {0}", e.what());
       }
     }
   }
 }
 
+// §6/§8: Max queue depth to bound memory usage under jog bursts
+static constexpr size_t MAX_QUEUE_DEPTH = 256;
+
 void MidiHelper::enqueue_message(std::vector<unsigned char> message){
   {
     std::lock_guard<std::mutex> lock(s_midi_out_queue_mutex);
-    s_midi_out_queue.push(std::move(message));
+
+    // When over limit, drop the oldest jog-type message (status 0x02 or 0x20)
+    // Never drop button messages.
+    if (s_midi_out_queue.size() >= MAX_QUEUE_DEPTH) {
+      for (auto it = s_midi_out_queue.begin(); it != s_midi_out_queue.end(); ++it) {
+        if (it->size() >= 2 && ((*it)[1] == 0x02 || (*it)[1] == 0x20)) {
+          s_midi_out_queue.erase(it);
+          break;
+        }
+      }
+    }
+
+    s_midi_out_queue.push_back(std::move(message));
   }
   s_midi_out_queue_cv.notify_one();
 }
@@ -136,7 +152,7 @@ RtMidiIn::RtMidiCallback MidiHelper::midi_in_callback(double deltatime, std::vec
       auto it = MidiEventIn::midi_in_mapping.find((char)status);
       if ((it != MidiEventIn::midi_in_mapping.end()) && (channel >= 0xb0) && (channel <= 0xb4)){
         if ((status == 0x50) && (value >= 0x0) && (value <= 0xc)){
-          if (!UtilsHelper::show_beat_loop_display(channel, status, value, data->traktor_device_id, data->config))
+          if (!UtilsHelper::show_beat_loop_display(channel, status, value, data->traktor_device_id, data->config, data->led_writer))
           {
             logger->debug("[MidiHelper::midi_in_callback] Error processing beat loop size: Channel: {0} Status: {1} Value: {2}", channel, status, value);
             return nullptr;
@@ -147,7 +163,7 @@ RtMidiIn::RtMidiCallback MidiHelper::midi_in_callback(double deltatime, std::vec
         string control_id = it->second->check_channel_value(channel);
 
         if ((control_id != "-") && control_id.length() > 3){
-          if (!UtilsHelper::show_vumeters_leds(value, data->traktor_device_id, control_id, data->config)){
+          if (!UtilsHelper::show_vumeters_leds(value, data->traktor_device_id, control_id, data->config, data->led_writer)){
             logger->debug("[MidiHelper::midi_in_callback] Error processing vu meters: Channel: {0} Status: {1} Value: {2}", channel, status, value);
             return nullptr;
           }
@@ -156,7 +172,7 @@ RtMidiIn::RtMidiCallback MidiHelper::midi_in_callback(double deltatime, std::vec
         }
         else{
           if (control_id != "-"){
-            if (!UtilsHelper::show_static_leds(value, data->traktor_device_id, control_id, data->config)){
+            if (!UtilsHelper::show_static_leds(value, data->traktor_device_id, control_id, data->config, data->led_writer)){
               logger->debug("[MidiHelper::midi_in_callback] Error processing static Led: Channel: {0} Status: {1} Value: {2}", channel, status, value);
               return nullptr;
             }

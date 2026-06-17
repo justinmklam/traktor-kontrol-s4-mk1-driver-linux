@@ -29,7 +29,8 @@ class Jog
     int counter;
     int prev_control_value;
     int sensitivity;
-    int updated;
+    int64_t updated;
+    bool was_touching = false;
     int handle_event(RtMidiOut *midi_out_port,
                      bool shift_ch1,
                      bool shift_ch2,

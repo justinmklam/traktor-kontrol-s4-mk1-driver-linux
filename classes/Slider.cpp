@@ -25,8 +25,9 @@ Slider::Slider(){
 
 int Slider::handle_event(RtMidiOut *midi_out, bool shift_ch1, bool shift_ch2, bool toggle_ac, bool toggle_bd, ConfigHelper *config_helper){
   shared_ptr<spdlog::logger> logger = spdlog::get(config_helper->get_string_value("traktor_s4_logger_name"));
-  if (MidiEventOut::midi_mapping.find(code) != MidiEventOut::midi_mapping.end()) {
-    MidiEventOut *midi_event = MidiEventOut::midi_mapping[code];
+  auto mm_it = MidiEventOut::midi_mapping.find(code);
+  if (mm_it != MidiEventOut::midi_mapping.end()) {
+    MidiEventOut *midi_event = mm_it->second;
     logger->debug("[Slider::handle_event] Slider named {0} performed with Code:{1} Value: {2}", name, code, value);
     logger->debug("[Slider::handle_event] Sending to MIDI with: Name: {0} Controller Type: {1} Status: {2} Channel: {3}", midi_event->name, midi_event->controller_type, midi_event->status_byte, midi_event->channel_byte);
     logger->debug("[Slider::handle_event] Creating message...");

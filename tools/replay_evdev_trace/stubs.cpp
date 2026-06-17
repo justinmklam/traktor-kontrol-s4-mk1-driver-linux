@@ -27,14 +27,14 @@ std::mutex g_capture_mutex;
 // ---------------------------------------------------------------------------
 // MidiHelper static members — only the bare minimum needed for linking.
 // ---------------------------------------------------------------------------
-std::queue<std::vector<unsigned char>> MidiHelper::s_midi_out_queue;
+std::deque<std::vector<unsigned char>> MidiHelper::s_midi_out_queue;
 std::mutex                             MidiHelper::s_midi_out_queue_mutex;
 std::condition_variable                MidiHelper::s_midi_out_queue_cv;
 std::thread                            MidiHelper::s_midi_out_thread;
 std::atomic<bool>                      MidiHelper::s_midi_out_running{false};
 RtMidiOut                             *MidiHelper::s_pMidiOut = nullptr;
 
-MidiHelper::MidiHelper(ConfigHelper *config) {
+MidiHelper::MidiHelper(ConfigHelper *config, int, LedWriter*) {
     config_helper = config;
     traktor_device_id = 0;
     pMidiOut = nullptr;
@@ -89,3 +89,21 @@ int AlsaHelper::bulk_led_value(int card_id, int control_ids[], int led_value, in
 int AlsaHelper::get_traktor_device(ConfigHelper*) {
     return 0;  // fake card id
 }
+
+// ---------------------------------------------------------------------------
+// LedWriter stubs — capture LED commands (called by UtilsHelper in replay mode).
+// ---------------------------------------------------------------------------
+#include "LedWriter.h"
+
+LedWriter::LedWriter(int) {}
+LedWriter::~LedWriter() = default;
+void LedWriter::set_led(int control_id, int value) {
+    std::lock_guard<std::mutex> lock(g_capture_mutex);
+    g_captured_leds.emplace_back(control_id, value, 0);
+}
+void LedWriter::set_leds(const std::vector<std::pair<int, int>>& updates) {
+    for (auto& [id, val] : updates) {
+        set_led(id, val);
+    }
+}
+void LedWriter::flush() {}

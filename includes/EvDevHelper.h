@@ -30,6 +30,7 @@
 #include "AlsaHelper.h"
 #include "UtilsHelper.h"
 #include "ConfigHelper.h"
+#include "LedWriter.h"
 
 using namespace std;
 
@@ -38,13 +39,14 @@ class EvDevHelper
  private:
     vector<string> get_evdev_device();
     ConfigHelper *config_helper;
+    LedWriter *led_writer_ = nullptr;
     struct libevdev *dev_ = nullptr;
     int fd_ = -1;
     atomic<bool> running_{true};
     bool open_evdev_device();
 
  public:
-    EvDevHelper(ConfigHelper *config);
+    EvDevHelper(ConfigHelper *config, int traktor_device_id, LedWriter *led_writer);
     tuple<int, struct libevdev *> get_traktor_controller_device();
     void read_events_from_device(RtMidiOut *midi_out_port);
     static void initialize_buttons_leds(ConfigHelper *config_helper);

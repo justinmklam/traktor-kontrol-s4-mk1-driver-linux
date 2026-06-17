@@ -21,21 +21,28 @@ Jog::Jog(int in_code, string in_name, int in_value){
   value = in_value;
   sensitivity = 5;
   prev_control_value = -1000;
+  updated = -1;
+  was_touching = false;
 }
 
 int Jog::handle_event(RtMidiOut *midi_out, bool shift_ch1, bool shift_ch2, bool toggle_ac, bool toggle_bd, ConfigHelper *config_helper){
   shared_ptr<spdlog::logger> logger = spdlog::get(config_helper->get_string_value("traktor_s4_logger_name"));
-  if (MidiEventOut::midi_mapping.find(code) != MidiEventOut::midi_mapping.end()) {
-    MidiEventOut *midi_event = MidiEventOut::midi_mapping[code];
+  auto mm_it = MidiEventOut::midi_mapping.find(code);
+  if (mm_it != MidiEventOut::midi_mapping.end()) {
+    MidiEventOut *midi_event = mm_it->second;
     logger->debug("[Jog::handle_event] Jog Wheel {0} with Code: {1} and Value {2}", name, code, value);
     logger->debug("[Jog::handle_event] Sending to MIDI with: Name: {0} Controller Type: {1} Status: {2} Channel: {3}", midi_event->name, midi_event->controller_type, midi_event->status_byte, midi_event->channel_byte);
     logger->debug("[Jog::handle_event] Creating message...");
     int midi_value = 0;
 
     if (midi_event->controller_type == "JOG_TOUCH"){
-      if (value >= 3050){
-        midi_value = 0x7f;
+      // §5: Edge detection for jog touch — only send on state change
+      bool now_touching = (value >= 3050);
+      if (now_touching == was_touching) {
+        return 0;  // suppress repeated same-state
       }
+      was_touching = now_touching;
+      midi_value = now_touching ? 0x7f : 0x00;
     }
     else{
       midi_value = get_value_jog();

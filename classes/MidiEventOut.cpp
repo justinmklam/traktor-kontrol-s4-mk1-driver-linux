@@ -153,6 +153,6 @@ map<int, MidiEventOut *> MidiEventOut::midi_mapping = {
 };
 
 
-int MidiEventOut::get_time(){
-  return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+int64_t MidiEventOut::get_time(){
+  return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
 }

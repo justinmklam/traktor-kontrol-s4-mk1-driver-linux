@@ -1,23 +1,30 @@
 #include <iostream>
+#include <pthread.h>
+#include <sched.h>
 #include "EvDevHelper.h"
 #include "PerfCounters.h"
 
 using namespace std;
 
-int traktor_device_id_ = 0;
-bool shift_ch1 = false;
-bool shift_ch2 = false;
-bool toggle_ac = false;
-bool toggle_bd = false;
+// Set by signal handler in main.cpp — checked in the evdev poll loop
+extern std::atomic<bool> g_shutdown_requested;
 
-EvDevHelper::EvDevHelper(ConfigHelper *config){
+int traktor_device_id_ = 0;
+atomic<bool> shift_ch1{false};
+atomic<bool> shift_ch2{false};
+atomic<bool> toggle_ac{false};
+atomic<bool> toggle_bd{false};
+
+EvDevHelper::EvDevHelper(ConfigHelper *config, int traktor_device_id, LedWriter *led_writer){
   config_helper = config;
+  led_writer_ = led_writer;
   shared_ptr<spdlog::logger> logger = spdlog::get(config_helper->get_string_value("traktor_s4_logger_name"));
-  traktor_device_id_ = AlsaHelper::get_traktor_device(config_helper);
+  traktor_device_id_ = traktor_device_id;
   if (traktor_device_id_ == -1){
-    logger->error("[EvDevHelper:EvDevHelper] {0} Device not found.... Bye!", config_helper->get_string_value("alsa_device_name"));
+    logger->error("[EvDevHelper:EvDevHelper] Device not found.... Bye!");
     exit(EXIT_FAILURE);
   }
+  // Keep AlsaHelper::init_ctl for the sync init/shutdown path
   AlsaHelper::init_ctl(traktor_device_id_, config_helper);
 
   // Open evdev device once and store as member
@@ -102,6 +109,20 @@ void EvDevHelper::read_events_from_device(RtMidiOut *pMidiOut) {
            libevdev_get_id_vendor(dev_),
            libevdev_get_id_product(dev_));
 
+    // §16: Elevate evdev reader thread priority for lower latency
+    {
+        struct sched_param param{};
+        param.sched_priority = 20;
+        if (pthread_setschedparam(pthread_self(), SCHED_FIFO, &param) != 0) {
+            // Non-fatal — may need CAP_SYS_NICE or root
+            if (nice(-10) == -1 && errno != 0) {
+                logger->debug("[EvDevHelper] Failed to set RT or nice priority: {0}", strerror(errno));
+            }
+        } else {
+            logger->debug("[EvDevHelper] Set SCHED_FIFO priority 20 for evdev reader thread");
+        }
+    }
+
     // Cache config values used in the hot path (see §7a)
     const int shift_ch1_code = config_helper->get_int_value("alsa_device_shift_ch1_value");
     const int shift_ch2_code = config_helper->get_int_value("alsa_device_shift_ch2_value");
@@ -114,7 +135,7 @@ void EvDevHelper::read_events_from_device(RtMidiOut *pMidiOut) {
 
     running_.store(true, memory_order_relaxed);
 
-    while (running_.load(memory_order_relaxed)) {
+    while (running_.load(memory_order_relaxed) && !g_shutdown_requested.load(memory_order_relaxed)) {
         PERF_SCOPE("evdev_poll_wait");
 
         // Block until input is available
@@ -154,32 +175,32 @@ void EvDevHelper::read_events_from_device(RtMidiOut *pMidiOut) {
                 // §12: Skip EV_SYN events early — they carry no actionable data
                 if (ev.type == EV_SYN) continue;
 
-                if (ev.code == shift_ch1_code){ // SHIFT CH1
-                  shift_ch1 = !shift_ch1;
+                if (ev.code == shift_ch1_code){ // SHIFT CH1 — momentary (§5)
+                  if (ev.value == 1) shift_ch1.store(true, memory_order_relaxed);
+                  else if (ev.value == 0) shift_ch1.store(false, memory_order_relaxed);
+                  // ev.value == 2 is key repeat — ignore
                   continue;
                 }
-                if (ev.code == shift_ch2_code){ // SHIFT CH2
-                  shift_ch2 = !shift_ch2;
+                if (ev.code == shift_ch2_code){ // SHIFT CH2 — momentary (§5)
+                  if (ev.value == 1) shift_ch2.store(true, memory_order_relaxed);
+                  else if (ev.value == 0) shift_ch2.store(false, memory_order_relaxed);
                   continue;
                 }
                 if ((ev.code == toggle_ac_code) && (ev.value == 1)){ // TOGGLE CH1 / CH3
                   auto t_toggle = PerfCounters::now();
                   toggle_ac = !toggle_ac;
                   if (toggle_ac){
-                    int to_on[] = { 75, 87, 40, 41, 49 };
-                    int to_off[] = { 23, 14, 15, 86 };
-
-                    AlsaHelper::bulk_led_value(traktor_device_id_, to_on, Led::ON, 5, config_helper);
-                    AlsaHelper::bulk_led_value(traktor_device_id_, to_off, Led::OFF, 4, config_helper);
+                    led_writer_->set_leds({
+                      {75, Led::ON}, {87, Led::ON}, {40, Led::ON}, {41, Led::ON}, {49, Led::ON},
+                      {23, Led::OFF}, {14, Led::OFF}, {15, Led::OFF}, {86, Led::OFF}
+                    });
                   }
                   else{
-                    int to_on[] = { 86, 23, 14, 15 };
-                    int to_low[] = { 75 };
-                    int to_off[] = { 87, 40, 41, 49 };
-
-                    AlsaHelper::bulk_led_value(traktor_device_id_, to_on, Led::ON, 4, config_helper);
-                    AlsaHelper::bulk_led_value(traktor_device_id_, to_low, Led::MIDDLE, 1, config_helper);
-                    AlsaHelper::bulk_led_value(traktor_device_id_, to_off, Led::OFF, 4, config_helper);
+                    led_writer_->set_leds({
+                      {86, Led::ON}, {23, Led::ON}, {14, Led::ON}, {15, Led::ON},
+                      {75, Led::MIDDLE},
+                      {87, Led::OFF}, {40, Led::OFF}, {41, Led::OFF}, {49, Led::OFF}
+                    });
                   }
                   PerfCounters::record("toggle_ac_leds", t_toggle);
                   logger->debug("[EvDevHelper::read_events_from_device] Deck toggle AC Changed: {0}", toggle_ac);
@@ -189,18 +210,17 @@ void EvDevHelper::read_events_from_device(RtMidiOut *pMidiOut) {
                   auto t_toggle = PerfCounters::now();
                   toggle_bd = !toggle_bd;
                   if (toggle_bd){
-                    int to_on[] = { 53, 54, 62, 131, 119 };
-                    int to_off[] = { 130, 36, 27, 28 };
-                    AlsaHelper::bulk_led_value(traktor_device_id_, to_on, Led::ON, 5, config_helper);
-                    AlsaHelper::bulk_led_value(traktor_device_id_, to_off, Led::OFF, 4, config_helper);
+                    led_writer_->set_leds({
+                      {53, Led::ON}, {54, Led::ON}, {62, Led::ON}, {131, Led::ON}, {119, Led::ON},
+                      {130, Led::OFF}, {36, Led::OFF}, {27, Led::OFF}, {28, Led::OFF}
+                    });
                   }
                   else{
-                    int to_on[] = { 27, 28, 36, 130 };
-                    int to_low[] = { 119 };
-                    int to_off[] = { 131, 62, 53, 54 };
-                    AlsaHelper::bulk_led_value(traktor_device_id_, to_on, Led::ON, 4, config_helper);
-                    AlsaHelper::bulk_led_value(traktor_device_id_, to_low, Led::MIDDLE, 1, config_helper);
-                    AlsaHelper::bulk_led_value(traktor_device_id_, to_off, Led::OFF, 4, config_helper);
+                    led_writer_->set_leds({
+                      {27, Led::ON}, {28, Led::ON}, {36, Led::ON}, {130, Led::ON},
+                      {119, Led::MIDDLE},
+                      {131, Led::OFF}, {62, Led::OFF}, {53, Led::OFF}, {54, Led::OFF}
+                    });
                   }
                   PerfCounters::record("toggle_bd_leds", t_toggle);
                   logger->debug("[EvDevHelper::read_events_from_device] Deck toggle BD Changed: {0}", toggle_bd);

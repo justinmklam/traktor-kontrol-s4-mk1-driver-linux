@@ -10,9 +10,8 @@ void PerfCounters::report() {
     auto &s = slots();
     if (s.empty()) return;
 
-    // Try to find the driver logger; fall back to default if not available
+    // Try to find the driver logger.
     auto logger = spdlog::get("traktor_kontrol_s4_logger");
-    if (!logger) logger = spdlog::default_logger();
     if (!logger) return;
 
     logger->info("=== PerfCounters report ===");

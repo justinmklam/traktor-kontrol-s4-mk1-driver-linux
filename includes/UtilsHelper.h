@@ -14,6 +14,8 @@
 
 using namespace std;
 
+class LedWriter;
+
 class UtilsHelper
 {
  public:
@@ -22,9 +24,9 @@ class UtilsHelper
   static vector<unsigned char> create_message(bool shift1, bool shift2, bool toggle_ac,
                                        bool toggle_bd, MidiEventOut* midi_event,
                                        unsigned char value);
-  static bool show_beat_loop_display(unsigned char channel, unsigned char status, unsigned char value, int traktor_device_id, ConfigHelper *config);
-  static bool show_vumeters_leds(unsigned char value, int traktor_device_id, string control_id, ConfigHelper *config_helper);
-  static bool show_static_leds(unsigned char value, int traktor_device_id, string control_id, ConfigHelper *config_helper);
+  static bool show_beat_loop_display(unsigned char channel, unsigned char status, unsigned char value, int traktor_device_id, ConfigHelper *config, LedWriter *led_writer = nullptr);
+  static bool show_vumeters_leds(unsigned char value, int traktor_device_id, string control_id, ConfigHelper *config_helper, LedWriter *led_writer = nullptr);
+  static bool show_static_leds(unsigned char value, int traktor_device_id, string control_id, ConfigHelper *config_helper, LedWriter *led_writer = nullptr);
   ConfigHelper *config_helper;
 };
 #endif  // TRAKTOR_KONTROL_S4_MK1_DRIVER_LINUX_INCLUDES_UTILSHELPER_H_

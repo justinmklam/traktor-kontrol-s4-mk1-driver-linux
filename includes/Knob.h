@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <chrono>
+#include <cstdint>
 // --------------------------
 #include "MidiEventOut.h"
 #include "MidiHelper.h"
@@ -28,7 +29,7 @@ class Knob
     int value;
     int counter;
     int prev_control_value;
-    int updated;
+    int64_t updated;
     static map<int, Knob *> knob_mapping;
     int handle_event(RtMidiOut *midi_out_port,
                      bool shift_ch1,

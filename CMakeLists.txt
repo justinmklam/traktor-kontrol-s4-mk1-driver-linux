@@ -36,6 +36,7 @@ add_executable(traktor_kontrol_s4_mk1_driver_linux
         includes/cxxopts.hpp
         includes/UtilsHelper.h
         includes/PerfCounters.h
+        includes/LedWriter.h
         classes/Button.cpp
         classes/MidiHelper.cpp
         classes/EvDevHelper.cpp
@@ -50,6 +51,7 @@ add_executable(traktor_kontrol_s4_mk1_driver_linux
         classes/MidiEventIn.cpp
         classes/UtilsHelper.cpp
         classes/PerfCounters.cpp
+        classes/LedWriter.cpp
         main.cpp)
 
 find_package(PkgConfig REQUIRED)

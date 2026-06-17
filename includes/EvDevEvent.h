@@ -24,7 +24,6 @@ class EvDevEvent
     __u16 code;
     __s32 value;
     timeval time{};
-    static const map<__u16, string> types;
     void handle_with(RtMidiOut *midi_out,
                      int controller_id,
                      bool shift_ch1,

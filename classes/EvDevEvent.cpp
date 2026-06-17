@@ -1,4 +1,5 @@
 #include "EvDevEvent.h"
+#include <linux/input-event-codes.h>
 
 using namespace std;
 
@@ -6,12 +7,6 @@ Knob *knob_dev;
 Slider *slider_dev;
 Jog *jog_dev;
 Button *button_dev;
-
-const map<__u16, string> EvDevEvent::types = {
-        {0, "EV_SYN"},
-        {3, "EV_ABS"},
-        {1, "EV_KEY"}
-};
 
 EvDevEvent::EvDevEvent(__u16 in_type, __u16 in_code, __s32 in_value, timeval in_time) {
     type = in_type;
@@ -23,10 +18,17 @@ EvDevEvent::EvDevEvent(__u16 in_type, __u16 in_code, __s32 in_value, timeval in_
 void EvDevEvent::handle_with(RtMidiOut *midi_out, int controller_id, bool shift_ch1, bool shift_ch2, bool toggle_ac, bool toggle_bd, ConfigHelper *config_helper){
   shared_ptr<spdlog::logger> logger = spdlog::get(config_helper->get_string_value("traktor_s4_logger_name"));
   logger->debug("[EvDevEvent::handle_with] Checking event to handle with...");
-    string type_string = EvDevEvent::types.find(type)->second;
-    logger->debug("[EvDevEvent::handle_with] Type: {0} Code: {1}", type_string, code);
-    if (type_string == "EV_KEY"){
-        button_dev = Button::buttons_mapping[code];
+
+  // §7b: Integer switch instead of string map lookup
+  switch (type) {
+    case EV_KEY: { // 1
+        logger->debug("[EvDevEvent::handle_with] Type: EV_KEY Code: {0}", code);
+        auto it = Button::buttons_mapping.find(code);
+        if (it == Button::buttons_mapping.end()){
+          logger->debug("[EvDevEvent::handle_with] BUTTON not recognized with code: {0}", code);
+          return;
+        }
+        button_dev = it->second;
         if (button_dev == nullptr){
           logger->debug("[EvDevEvent::handle_with] BUTTON not recognized with code: {0}", code);
           return;
@@ -38,10 +40,13 @@ void EvDevEvent::handle_with(RtMidiOut *midi_out, int controller_id, bool shift_
         if (status < 0){
           logger->error("[EvDevEvent::handle_with] Error handling BUTTON with Code: {0} Name: {1} Status: {2}", to_string(button_dev->code), button_dev->name,  status);
         }
+        break;
     }
-    else if (type_string == "EV_ABS"){
-        if (Slider::sliders_mapping.find(code) != Slider::sliders_mapping.end()){
-            slider_dev = Slider::sliders_mapping[code];
+    case EV_ABS: { // 3
+        // §7c: Single map lookup for each type
+        auto sl_it = Slider::sliders_mapping.find(code);
+        if (sl_it != Slider::sliders_mapping.end()){
+            slider_dev = sl_it->second;
             if (slider_dev == nullptr){
               logger->debug("[EvDevEvent::handle_with] SLIDER not recognized with code: {0}", code);
               return;
@@ -53,9 +58,11 @@ void EvDevEvent::handle_with(RtMidiOut *midi_out, int controller_id, bool shift_
             if (status < 0){
               logger->debug("[EvDevEvent::handle_with] Error handling SLIDER with Code: {0} Name: {1} Status: {2}", to_string(slider_dev->code), slider_dev->name,  strerror(status));
             }
+            break;
         }
-        else if (Knob::knob_mapping.find(code) != Knob::knob_mapping.end()){
-            knob_dev = Knob::knob_mapping[code];
+        auto kn_it = Knob::knob_mapping.find(code);
+        if (kn_it != Knob::knob_mapping.end()){
+            knob_dev = kn_it->second;
             if (knob_dev == nullptr){
               logger->debug("[EvDevEvent::handle_with] KNOB not recognized with code: {0}", code);
               return;
@@ -67,9 +74,11 @@ void EvDevEvent::handle_with(RtMidiOut *midi_out, int controller_id, bool shift_
             if (status < 0){
               logger->debug("[EvDevEvent::handle_with] Error handling KNOB with Code: {0} Name: {1} Status: {2}", to_string(knob_dev->code), knob_dev->name,  strerror(status));
             }
+            break;
         }
-        else if (Jog::jog_mapping.find(code) != Jog::jog_mapping.end()){
-            jog_dev = Jog::jog_mapping[code];
+        auto jg_it = Jog::jog_mapping.find(code);
+        if (jg_it != Jog::jog_mapping.end()){
+            jog_dev = jg_it->second;
             if (jog_dev == nullptr){
               logger->debug("[EvDevEvent::handle_with] JOG WHEEL not recognized with code: {0}", code);
               return;
@@ -81,13 +90,14 @@ void EvDevEvent::handle_with(RtMidiOut *midi_out, int controller_id, bool shift_
             if (status < 0){
               logger->debug("[EvDevEvent::handle_with] Error handling JOG WHEEL with Code: {0} Name: {1} Status: {2}", to_string(button_dev->code), button_dev->name,  strerror(status));
             }
+            break;
         }
-        else{
-          logger->debug("[EvDevEvent::handle_with] EV_ABS Event not handled: {0} {1} {2} {3}", to_string(type), to_string(code), to_string(value), to_string(time.tv_sec));
-        }
+        logger->debug("[EvDevEvent::handle_with] EV_ABS Event not handled: {0} {1} {2} {3}", to_string(type), to_string(code), to_string(value), to_string(time.tv_sec));
+        break;
     }
-    else {
-      logger->debug("[EvDevEvent::handle_with] Event not recognized: Type: {0} Code: {1} Value: {2} Time: {3}", EvDevEvent::types.find(type)->second, to_string(code), to_string(value), to_string(time.tv_sec));
+    default:
+        logger->debug("[EvDevEvent::handle_with] Event not recognized: Type: {0} Code: {1} Value: {2} Time: {3}", to_string(type), to_string(code), to_string(value), to_string(time.tv_sec));
+        break;
     }
     logger->debug("[EvDevEvent::handle_with] Finished");
 }

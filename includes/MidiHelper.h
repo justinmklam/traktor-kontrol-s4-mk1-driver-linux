@@ -46,6 +46,8 @@ public:
 
 using namespace std;
 
+class LedWriter;
+
 class MidiHelper
 {
  private:
@@ -56,8 +58,9 @@ class MidiHelper
                                                       const string &error_message,
                                                       void *user_data);
     ConfigHelper *config_helper;
+    LedWriter *led_writer_ = nullptr;
 
-    static std::queue<std::vector<unsigned char>> s_midi_out_queue;
+    static std::deque<std::vector<unsigned char>> s_midi_out_queue;
     static std::mutex s_midi_out_queue_mutex;
     static std::condition_variable s_midi_out_queue_cv;
     static std::thread s_midi_out_thread;
@@ -66,7 +69,7 @@ class MidiHelper
     static void midi_out_sender_loop();
 
  public:
-    MidiHelper(ConfigHelper *config);
+    MidiHelper(ConfigHelper *config, int traktor_device_id, LedWriter *led_writer);
     ~MidiHelper();
     RtMidiOut *pMidiOut = 0;
     RtMidiIn *pMidiIn = 0;

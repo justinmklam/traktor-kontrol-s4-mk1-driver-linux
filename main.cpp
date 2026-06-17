@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <cstdlib>
 #include <unistd.h>
+#include <signal.h>
+#include <atomic>
 #include "includes/MidiHelper.h"
 #include "includes/EvDevHelper.h"
 #include "includes/cxxopts.hpp"
@@ -9,6 +11,7 @@
 #include "includes/ConfigHelper.h"
 #include "includes/AlsaHelper.h"
 #include "includes/PerfCounters.h"
+#include "includes/LedWriter.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/async.h"
 
@@ -38,24 +41,30 @@ bool delete_pid_file()
   return true;
 }
 
-void shutdown_application(int signum)
-{
-  PerfCounters::report();
-  EvDevHelper::shutdown_buttons_leds(::config_helper);
-  AlsaHelper::close_ctl(::config_helper);
-  delete_pid_file();
-  exit(signum);
+// §13: Atomic flag set by signal handler — poll() in evdev loop checks this via EINTR
+std::atomic<bool> g_shutdown_requested{false};
+
+void signal_handler(int signum) {
+    (void)signum;
+    g_shutdown_requested.store(true, std::memory_order_relaxed);
 }
 
-void capture_signals()
-{
-  signal(SIGTERM,shutdown_application);
-  signal(SIGKILL,shutdown_application);
-  signal(SIGSEGV,shutdown_application);
-  signal(SIGABRT,shutdown_application);
-  signal(SIGQUIT,shutdown_application);
-  signal(SIGTSTP,shutdown_application);
-  signal(SIGINT,shutdown_application);
+void capture_signals() {
+    struct sigaction sa{};
+    sa.sa_handler = signal_handler;
+    sa.sa_flags = 0;  // no SA_RESTART — let poll() return EINTR so the loop re-checks
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGTERM, &sa, nullptr);
+    sigaction(SIGINT, &sa, nullptr);
+    sigaction(SIGQUIT, &sa, nullptr);
+    // SIGKILL cannot be caught; SIGSEGV/SIGABRT should crash, not clean up
+}
+
+void cleanup_and_exit() {
+    PerfCounters::report();
+    EvDevHelper::shutdown_buttons_leds(::config_helper);
+    AlsaHelper::close_ctl(::config_helper);
+    delete_pid_file();
 }
 
 static void show_main_configuration() {
@@ -83,9 +92,19 @@ static void show_main_configuration() {
 static void init_application() {
   shared_ptr<spdlog::logger> logger = spdlog::get(config_helper->get_string_value("traktor_s4_logger_name"));
 
+  // §7g: Scan for the ALSA device once, share between helpers
+  int traktor_device_id = AlsaHelper::get_traktor_device(config_helper);
+  if (traktor_device_id == -1){
+    logger->error("[main::init_application] Traktor Kontrol S4 Device not found.... Bye!");
+    exit(EXIT_FAILURE);
+  }
+
+  // §3: Create the async LED writer (opens its own ALSA ctl handle)
+  auto *led_writer = new LedWriter(traktor_device_id);
+
   logger->info("[main::init_application] Starting helpers....");
-  evdev_helper = new EvDevHelper(config_helper);
-  rtmidi_helper = new MidiHelper(config_helper);
+  evdev_helper = new EvDevHelper(config_helper, traktor_device_id, led_writer);
+  rtmidi_helper = new MidiHelper(config_helper, traktor_device_id, led_writer);
 
   logger->info("[main::init_application] Get MIDI information....");
   MidiHelper::show_midi_information(rtmidi_helper, config_helper);
@@ -164,5 +183,6 @@ int main(int argc, char **argv)
     show_main_configuration();
     init_application();
 
-    shutdown_application(EXIT_SUCCESS);
+    cleanup_and_exit();
+    return 0;
 }
