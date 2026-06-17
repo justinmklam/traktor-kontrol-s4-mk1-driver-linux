@@ -11,8 +11,8 @@
         <controls>
             <control>
                 <group>[Channel1]</group>
-                <key>pitch_down</key>
-                <description>Pitch Up from button</description>
+                <key>rate_perm_down</key>
+                <description>Pitch Down from button</description>
                 <status>0xB0</status>
                 <midino>0x64</midino>
                 <options>
@@ -21,8 +21,8 @@
             </control>
             <control>
                 <group>[Channel2]</group>
-                <key>pitch_down</key>
-                <description>Pitch Up from button</description>
+                <key>rate_perm_down</key>
+                <description>Pitch Down from button</description>
                 <status>0xB1</status>
                 <midino>0x64</midino>
                 <options>
@@ -31,8 +31,8 @@
             </control>
             <control>
                 <group>[Channel3]</group>
-                <key>pitch_down</key>
-                <description>Pitch Up from button</description>
+                <key>rate_perm_down</key>
+                <description>Pitch Down from button</description>
                 <status>0xB2</status>
                 <midino>0x64</midino>
                 <options>
@@ -41,8 +41,8 @@
             </control>
             <control>
                 <group>[Channel4]</group>
-                <key>pitch_down</key>
-                <description>Pitch Up from button</description>
+                <key>rate_perm_down</key>
+                <description>Pitch Down from button</description>
                 <status>0xB3</status>
                 <midino>0x64</midino>
                 <options>
@@ -51,7 +51,7 @@
             </control>
             <control>
                 <group>[Channel1]</group>
-                <key>pitch_up</key>
+                <key>rate_perm_up</key>
                 <description>Pitch Up from button</description>
                 <status>0xB0</status>
                 <midino>0x62</midino>
@@ -61,7 +61,7 @@
             </control>
             <control>
                 <group>[Channel2]</group>
-                <key>pitch_up</key>
+                <key>rate_perm_up</key>
                 <description>Pitch Up from button</description>
                 <status>0xB1</status>
                 <midino>0x62</midino>
@@ -71,7 +71,7 @@
             </control>
             <control>
                 <group>[Channel3]</group>
-                <key>pitch_up</key>
+                <key>rate_perm_up</key>
                 <description>Pitch Up from button</description>
                 <status>0xB2</status>
                 <midino>0x62</midino>
@@ -81,7 +81,7 @@
             </control>
             <control>
                 <group>[Channel4]</group>
-                <key>pitch_up</key>
+                <key>rate_perm_up</key>
                 <description>Pitch Up from button</description>
                 <status>0xB3</status>
                 <midino>0x62</midino>
@@ -92,7 +92,7 @@
             <control>
                 <group>[Channel1]</group>
                 <key>rate_perm_up_small</key>
-                <description>Pitch Up from button</description>
+                <description>Pitch Up small step (1%)</description>
                 <status>0xB0</status>
                 <midino>0x61</midino>
                 <options>
@@ -102,7 +102,7 @@
             <control>
                 <group>[Channel2]</group>
                 <key>rate_perm_up_small</key>
-                <description>Pitch Up from button</description>
+                <description>Pitch Up small step (1%)</description>
                 <status>0xB1</status>
                 <midino>0x61</midino>
                 <options>
@@ -112,7 +112,7 @@
             <control>
                 <group>[Channel3]</group>
                 <key>rate_perm_up_small</key>
-                <description>Pitch Up from button</description>
+                <description>Pitch Up small step (1%)</description>
                 <status>0xB2</status>
                 <midino>0x61</midino>
                 <options>
@@ -122,7 +122,7 @@
             <control>
                 <group>[Channel4]</group>
                 <key>rate_perm_up_small</key>
-                <description>Pitch Up from button</description>
+                <description>Pitch Up small step (1%)</description>
                 <status>0xB3</status>
                 <midino>0x61</midino>
                 <options>
@@ -132,7 +132,7 @@
             <control>
                 <group>[Channel1]</group>
                 <key>rate_perm_down_small</key>
-                <description>Pitch Down from button</description>
+                <description>Pitch Down small step (1%)</description>
                 <status>0xB0</status>
                 <midino>0x63</midino>
                 <options>
@@ -142,7 +142,7 @@
             <control>
                 <group>[Channel2]</group>
                 <key>rate_perm_down_small</key>
-                <description>Pitch Down from button</description>
+                <description>Pitch Down small step (1%)</description>
                 <status>0xB1</status>
                 <midino>0x63</midino>
                 <options>
@@ -152,7 +152,7 @@
             <control>
                 <group>[Channel3]</group>
                 <key>rate_perm_down_small</key>
-                <description>Pitch Down from button</description>
+                <description>Pitch Down small step (1%)</description>
                 <status>0xB2</status>
                 <midino>0x63</midino>
                 <options>
@@ -162,7 +162,7 @@
             <control>
                 <group>[Channel4]</group>
                 <key>rate_perm_down_small</key>
-                <description>Pitch Down from button</description>
+                <description>Pitch Down small step (1%)</description>
                 <status>0xB3</status>
                 <midino>0x63</midino>
                 <options>
@@ -490,6 +490,7 @@
                 </options>
             </control>
             <control>
+                <group>[Master]</group>
                 <key>TraktorKontrolS4mk1.quantize</key>
                 <description>Quantize on/off for all channels and 16 samplers</description>
                 <status>0xB4</status>
@@ -596,7 +597,7 @@
                 <status>0xB0</status>
                 <midino>0x08</midino>
                 <options>
-                    <selectknob/>
+                    <normal/>
                 </options>
             </control>
             <control>
@@ -2151,8 +2152,8 @@
             </control>
             <control>
                 <group>[Channel1]</group>
-                <key>pregain_set_one</key>
-                <description>Set Channel1 Gain to center</description>
+                <key>pregain_set_default</key>
+                <description>Reset channel gain to default</description>
                 <status>0xB0</status>
                 <midino>0x3D</midino>
                 <options>
@@ -2161,8 +2162,8 @@
             </control>
             <control>
                 <group>[Channel2]</group>
-                <key>pregain_set_one</key>
-                <description>Set Channel2 Gain to center</description>
+                <key>pregain_set_default</key>
+                <description>Reset channel gain to default</description>
                 <status>0xB1</status>
                 <midino>0x3D</midino>
                 <options>
@@ -2171,8 +2172,8 @@
             </control>
             <control>
                 <group>[Channel3]</group>
-                <key>pregain_set_one</key>
-                <description>Set Channel3 Gain to center</description>
+                <key>pregain_set_default</key>
+                <description>Reset channel gain to default</description>
                 <status>0xB2</status>
                 <midino>0x3D</midino>
                 <options>
@@ -2181,8 +2182,8 @@
             </control>
             <control>
                 <group>[Channel4]</group>
-                <key>pregain_set_one</key>
-                <description>Set Channel4 Gain to center</description>
+                <key>pregain_set_default</key>
+                <description>Reset channel gain to default</description>
                 <status>0xB3</status>
                 <midino>0x3D</midino>
                 <options>

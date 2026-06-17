@@ -13,8 +13,7 @@ var syncSamplers = true; // Flag for turning on/off sync on all samplers
 var deck_ac_current = "A";
 var deck_bd_current = "B";
 const beatJumps = [0.03125, 0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64] //Available beat loop
-var lastJogTime = [0, 0, 0, 0, 0]; // Throttle timestamps for jog wheels (index by deck number)
-var JOG_THROTTLE_MS = 10; // Minimum ms between jog wheel events
+var JOG_THROTTLE_MS = 10; // Minimum ms between jog wheel events (unused, throttle is in C++ driver)
 
 function TraktorKontrolS4mk1() {}
 
@@ -68,9 +67,9 @@ TraktorKontrolS4mk1.enableBeatLoop = function(channel, control, value, status, g
     if (value <= 0) return;
     const actualBeatLoop = engine.getValue(group, 'beatloop_size');
     if (engine.getValue(group, "loop_enabled")) {
-        engine.setValue(group, "beatloop_" + actualBeatLoop + "_toggle", true);
+        engine.setValue(group, "reloop_toggle", true);
     } else {
-        engine.setValue(group, "beatloop_" + actualBeatLoop + "_toggle", true);
+        engine.setValue(group, "beatloop_" + actualBeatLoop + "_activate", true);
     }
 }
 
@@ -82,7 +81,7 @@ TraktorKontrolS4mk1.manageSampler = function(channel, control, value, status, gr
     if (sampler_playing > 0) {
         engine.setValue(group, 'stop', true);
     } else {
-        engine.setValue(group, 'start_play', true);
+        engine.setValue(group, 'cue_gotoandplay', true);
     }
 
 
@@ -182,8 +181,7 @@ TraktorKontrolS4mk1.changeDeckBD = function(channel, control, value, status, gro
 
 TraktorKontrolS4mk1.fineRate = function(channel, control, value, status, group) {
     var actualRate = engine.getValue(group, 'rate');
-    print('Actal rate: ' + actualRate);
-    if (value > 1) engine.setValue(group, 'rate', actualRate + 0.001);
+    if (value > 64) engine.setValue(group, 'rate', actualRate + 0.001);
     else engine.setValue(group, 'rate', actualRate - 0.001);
 }
 
@@ -291,24 +289,20 @@ TraktorKontrolS4mk1.MoveFocusForward = function(channel, control, value, status,
 
 
 // Song preview on/off pushing Browse knob button
-// If nothing happends pushing Browse knob function as double click.
-//    This is a trick for opening/closing the Playlist, Procesar and History menues
 TraktorKontrolS4mk1.playStopPreview = function(channel, control, value, status, group) {
-    print('!jumpPrev: ' + !jumpPrev + ', !value: ' + !value + ', PrevDeckStop: ' + engine.getParameter('[PreviewDeck1]', "stop"))
-    print('LoadSelectedTrackAndPlay: ' + engine.getParameter('[PreviewDeck1]', "LoadSelectedTrackAndPlay"))
     if (value) browseKnobPressed = true;
     else browseKnobPressed = false;
     // Preview and on/off on browse knob pressing
     if (!value && !jumpPrev) {
-        change = true;
         if (engine.getParameter('[PreviewDeck1]', "stop") || browseKnobRotated) {
             engine.setValue('[PreviewDeck1]', "LoadSelectedTrackAndPlay", true);
             if (engine.getParameter('[PreviewDeck1]', "stop")) engine.setValue('[Library]', 'GoToItem', true);
-        } else engine.setValue('[PreviewDeck1]', "stop", true);
-        browseKnobRotated = false
+        } else {
+            engine.setValue('[PreviewDeck1]', "stop", true);
+        }
+        browseKnobRotated = false;
     }
     if (!value && jumpPrev) {
-        change = true
         jumpPrev = false;
         browseKnobRotated = false;
     }
@@ -320,7 +314,8 @@ TraktorKontrolS4mk1.browseUpDown = function(channel, control, value, status, gro
     browseKnobRotated = true
     if (value > 63) {
         if (browseKnobPressed) {
-            engine.setValue("[PreviewDeck1]", "beatjump_8_forward", true);
+            engine.setValue("[PreviewDeck1]", "beatjump_size", 8);
+            engine.setValue("[PreviewDeck1]", "beatjump_forward", true);
             jumpPrev = true;
         } else {
             engine.setValue('[Library]', "MoveDown", true);
@@ -330,7 +325,8 @@ TraktorKontrolS4mk1.browseUpDown = function(channel, control, value, status, gro
     }
     if (value < 63) {
         if (browseKnobPressed) {
-            engine.setValue("[PreviewDeck1]", "beatjump_8_backward", true);
+            engine.setValue("[PreviewDeck1]", "beatjump_size", 8);
+            engine.setValue("[PreviewDeck1]", "beatjump_backward", true);
             jumpPrev = true;
         } else {
             engine.setValue('[Library]', "MoveUp", true);
@@ -373,42 +369,43 @@ TraktorKontrolS4mk1.maximize_library = function(channel, control, value, status,
     maximizeLibrary = true;
 }
 
-// PFL on/off or Load track in library on or Browse button on
+// PFL on/off or Load track when library is active
 TraktorKontrolS4mk1.PFL = function(channel, control, value, status, group) {
-    // assign PFL[Channel] actual status (on/off)
     var pfl = engine.getParameter(group, "pfl");
-    // Si está activa "Big Library" (o presionado el boton Browse)
-    // al presionar el botón pfl ("CUE" en Kontrol S4) 
-    // se carga el track seleccionado en el canal correspondiente
-    print("Browse value: " + browseButtonFlag)
     if ((engine.getParameter('[Master]', 'maximize_library') || browseButtonFlag) && value) {
+        // Stop preview deck first to prevent it from stealing library focus
+        engine.setValue('[PreviewDeck1]', "stop", true);
+        // Confirm current library selection before loading
+        engine.setValue('[Library]', 'GoToItem', true);
+        // Now load the highlighted library track into the deck
         engine.setValue(group, "LoadSelectedTrack", true);
-        // Set gain to center value
-        engine.setValue(group, "pregain", true);
+        script.triggerControl(group, 'pregain_set_default', 50);
         midi.sendShortMsg(0xB0 + channel, 0x3C, 63);
-        //Turn on "LOAD" LED button
+        // Turn on "LOAD" LED button
         midi.sendShortMsg(channel + 0xB0, 0x01, 0x7F);
-        engine.setValue('[PreviewDeck1]', "stop", true); // Stop headphoes preview
         maximizeLibrary = false;
     }
-    // En caso contrario se activa función 'pfl' al presionar "CUE" en Kontrol S4
-    // del canal correspondiente
     else {
         if (pfl && !value) {
-            engine.setValue(group, "pfl", false)
-            PFLs[channel] = false
+            engine.setValue(group, "pfl", false);
+            PFLs[channel] = false;
         }
         if (!pfl && !value) {
-            engine.setValue(group, "pfl", true)
-            PFLs[channel] = true
+            engine.setValue(group, "pfl", true);
+            PFLs[channel] = true;
         }
     }
 }
 
 
 TraktorKontrolS4mk1.loadSelectedTrack = function(channel, control, value, status, group) {
+    // Stop preview deck first to prevent it from stealing library focus
+    engine.setValue('[PreviewDeck1]', "stop", true);
+    // Confirm current library selection before loading
+    engine.setValue('[Library]', 'GoToItem', true);
+    // Load the highlighted library track into the deck
     engine.setValue(group, "LoadSelectedTrack", true);
-    //Turn on "LOAD" LED button
+    // Turn on "LOAD" LED button
     midi.sendShortMsg(channel + 0xB0, 0x01, 0x7F);
 
     // Check the Hot Cues
@@ -419,8 +416,6 @@ TraktorKontrolS4mk1.loadSelectedTrack = function(channel, control, value, status
             midi.sendShortMsg(channel + 0xB0, 0x50 + i, 0x0);
         }
     }
-
-
 }
 
 TraktorKontrolS4mk1.setHotCue = function(channel, control, value, status, group) {
@@ -449,7 +444,7 @@ TraktorKontrolS4mk1.clearHotCue = function(channel, control, value, status, grou
 
 TraktorKontrolS4mk1.eject = function(channel, control, value, status, group) {
     engine.setValue(group, "eject", true);
-    engine.setValue(group, "LoadSelectedTrack", 0x00);
+    engine.setValue(group, "LoadSelectedTrack", 0);
     //Turn off "LOAD" LED button
     midi.sendShortMsg(channel + 0xB0, 0x01, 0x00);
 }
@@ -471,12 +466,11 @@ TraktorKontrolS4mk1.vuCallback4 = function(channel, control, value, status, grou
 // The button that enables/disables scratching
 TraktorKontrolS4mk1.wheelTouch = function(channel, control, value, status, group) {
     var deckNumber = script.deckFromGroup(group);
-    if ((status & 0xF0) === 0x90) { // If button down
-        //if (value === 0x7F) { // Some wheels send 0x90 on press and release, so you need to check the value
+    if (value >= 0x7F) { // Jog wheel touched (value 0x7F from CC)
         var alpha = 1.0 / 8;
         var beta = alpha / 32;
         engine.scratchEnable(deckNumber, 128, 8, alpha, beta);
-    } else { // If button up
+    } else { // Jog wheel released (value 0x00 from CC)
         engine.scratchDisable(deckNumber);
     }
 }
@@ -484,15 +478,8 @@ TraktorKontrolS4mk1.wheelTouch = function(channel, control, value, status, group
 // The wheel that actually controls the scratching
 TraktorKontrolS4mk1.wheelTurn = function(channel, control, value, status, group) {
     var deckNumber = script.deckFromGroup(group);
-    var now = Date.now();
-    if (now - lastJogTime[deckNumber] < JOG_THROTTLE_MS) {
-        return;
-    }
-    lastJogTime[deckNumber] = now;
 
-    // --- Choose only one of the following!
-
-    // A: For a control that centers on 0:
+    // Driver sends relative values: 1-63 = CW ticks, 64-127 = CCW ticks (64=-64, 127=-1)
     var newValue;
     if (value < 64) {
         newValue = value;
@@ -500,13 +487,6 @@ TraktorKontrolS4mk1.wheelTurn = function(channel, control, value, status, group)
         newValue = value - 128;
     }
 
-    // B: For a control that centers on 0x40 (64):
-    //var newValue = value - 64;
-
-    // --- End choice
-
-    // In either case, register the movement
-    var deckNumber = script.deckFromGroup(group);
     if (engine.isScratching(deckNumber)) {
         engine.scratchTick(deckNumber, newValue); // Scratch!
     } else {
