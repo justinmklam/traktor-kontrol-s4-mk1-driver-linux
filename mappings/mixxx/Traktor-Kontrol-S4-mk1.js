@@ -12,9 +12,12 @@ var quantizeVal; // Flag for turning on/off quantize
 var syncSamplers = true; // Flag for turning on/off sync on all samplers
 var deck_ac_current = "A";
 var deck_bd_current = "B";
-const beatJumps = [0.03125, 0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64] //Available beat loop
+const beatJumps = [0.03125, 0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512] //Available beat loop/jump sizes
 var lastJogTime = [0, 0, 0, 0, 0]; // Throttle timestamps for jog wheels (index by deck number)
-var JOG_THROTTLE_MS = 10; // Minimum ms between jog wheel events
+var JOG_THROTTLE_MS = 0; // Adaptive: small moves pass through, large moves throttle
+var JOG_THROTTLE_MAX_MS = 20; // Max throttle for fast spins/seeking
+var JOG_THROTTLE_THRESHOLD = 12; // |value| ≤ this → no throttle
+var JOG_THROTTLE_RESET_MS = 100; // Reset throttle after this ms of inactivity
 
 function TraktorKontrolS4mk1() {}
 
@@ -107,7 +110,7 @@ TraktorKontrolS4mk1.changeDeckAC = function(channel, control, value, status, gro
         var actualBeatLoop = engine.getValue("[Channel3]", 'beatloop_size');
         print('Beat loop size: ' + actualBeatLoop);
         var beatId = 0
-        for (var i = 0; i <= 11; i++) {
+        for (var i = 0; i <= 14; i++) {
             if (actualBeatLoop == beatJumps[i]) beatId = i;
         }
         midi.sendShortMsg(0xB2, 0x50, beatId);
@@ -125,7 +128,7 @@ TraktorKontrolS4mk1.changeDeckAC = function(channel, control, value, status, gro
         var actualBeatLoop = engine.getValue("[Channel1]", 'beatloop_size');
         print('Beat loop size: ' + actualBeatLoop);
         var beatId = 0
-        for (var i = 0; i <= 11; i++) {
+        for (var i = 0; i <= 14; i++) {
             if (actualBeatLoop == beatJumps[i]) beatId = i;
         }
         midi.sendShortMsg(0xB0, 0x50, beatId);
@@ -154,7 +157,7 @@ TraktorKontrolS4mk1.changeDeckBD = function(channel, control, value, status, gro
         var actualBeatLoop = engine.getValue("[Channel4]", 'beatloop_size');
         print('Beat loop size: ' + actualBeatLoop);
         var beatId = 0
-        for (var i = 0; i <= 11; i++) {
+        for (var i = 0; i <= 14; i++) {
             if (actualBeatLoop == beatJumps[i]) beatId = i;
         }
         midi.sendShortMsg(0xB3, 0x50, beatId);
@@ -172,7 +175,7 @@ TraktorKontrolS4mk1.changeDeckBD = function(channel, control, value, status, gro
         var actualBeatLoop = engine.getValue("[Channel2]", 'beatloop_size');
         print('Beat loop size: ' + actualBeatLoop);
         var beatId = 0
-        for (var i = 0; i <= 11; i++) {
+        for (var i = 0; i <= 14; i++) {
             if (actualBeatLoop == beatJumps[i]) beatId = i;
         }
         midi.sendShortMsg(0xB1, 0x50, beatId);
@@ -239,7 +242,7 @@ TraktorKontrolS4mk1.beatLoopSize = function(channel, control, value, status, gro
     var actualBeatJump = engine.getValue(group, 'beatjump_size');
     var beatIdLoop = 0;
     var beatIdJump = 0;
-    for (var i = 0; i <= 11; i++) {
+    for (var i = 0; i <= 14; i++) {
         if (actualBeatLoop == beatJumps[i]) beatIdLoop = i;
         if (actualBeatJump == beatJumps[i]) beatIdJump = i;
     }
@@ -254,11 +257,11 @@ TraktorKontrolS4mk1.beatLoopSize = function(channel, control, value, status, gro
         if (beatIdJump) engine.setValue(group, 'beatjump_size', beatJumps[beatIdJump - 1]);
     }
     if (value > 63) {
-        if (beatIdLoop < 11) {
+        if (beatIdLoop < 14) {
             engine.setValue(group, 'beatloop_size', beatJumps[beatIdLoop + 1]);
             midi.sendShortMsg(0xB0 + channel, 0x50, beatIdLoop + 1);
         }
-        if (beatIdJump < 11) engine.setValue(group, 'beatjump_size', beatJumps[beatIdJump + 1]);
+        if (beatIdJump < 14) engine.setValue(group, 'beatjump_size', beatJumps[beatIdJump + 1]);
     }
     midi.sendShortMsg(0xB0 + channel, 0x13, 63);
     midi.sendShortMsg(0xB0 + channel, 0x15, 63);
@@ -269,7 +272,7 @@ TraktorKontrolS4mk1.beatLoopSize = function(channel, control, value, status, gro
 /*TraktorKontrolS4mk1.beatJumpSize = function(channel, control, value, status, group) {
     var actualBeatJump = engine.getValue(group, 'beatjump_size');
     var beatId = 0
-    for (var i = 0; i <= 11; i++) {
+    for (var i = 0; i <= 14; i++) {
         if (actualBeatJump == beatJumps[i]) beatId = i;
     }
     if (value < 63) {
@@ -277,7 +280,7 @@ TraktorKontrolS4mk1.beatLoopSize = function(channel, control, value, status, gro
         midi.sendShortMsg(0xB0 + channel, 0x13, 63);
     }
     if (value > 63) {
-        if (beatId < 11) engine.setValue(group, 'beatjump_size', beatJumps[beatId + 1]);
+        if (beatId < 14) engine.setValue(group, 'beatjump_size', beatJumps[beatId + 1]);
         midi.sendShortMsg(0xB0 + channel, 0x13, 63);
     }
 }*/
@@ -373,6 +376,16 @@ TraktorKontrolS4mk1.maximize_library = function(channel, control, value, status,
     maximizeLibrary = true;
 }
 
+TraktorKontrolS4mk1.rate_perm_up_small = function(channel, control, value, status, group) {
+    if (value <= 0) return;
+    script.triggerControl(group, "rate_perm_up_small");
+}
+
+TraktorKontrolS4mk1.rate_perm_down_small = function(channel, control, value, status, group) {
+    if (value <= 0) return;
+    script.triggerControl(group, "rate_perm_down_small");
+}
+
 // PFL on/off or Load track in library on or Browse button on
 TraktorKontrolS4mk1.PFL = function(channel, control, value, status, group) {
     // assign PFL[Channel] actual status (on/off)
@@ -407,6 +420,7 @@ TraktorKontrolS4mk1.PFL = function(channel, control, value, status, group) {
 
 
 TraktorKontrolS4mk1.loadSelectedTrack = function(channel, control, value, status, group) {
+    if (value <= 0) return;
     engine.setValue(group, "LoadSelectedTrack", true);
     //Turn on "LOAD" LED button
     midi.sendShortMsg(channel + 0xB0, 0x01, 0x7F);
@@ -419,8 +433,6 @@ TraktorKontrolS4mk1.loadSelectedTrack = function(channel, control, value, status
             midi.sendShortMsg(channel + 0xB0, 0x50 + i, 0x0);
         }
     }
-
-
 }
 
 TraktorKontrolS4mk1.setHotCue = function(channel, control, value, status, group) {
@@ -449,7 +461,6 @@ TraktorKontrolS4mk1.clearHotCue = function(channel, control, value, status, grou
 
 TraktorKontrolS4mk1.eject = function(channel, control, value, status, group) {
     engine.setValue(group, "eject", true);
-    engine.setValue(group, "LoadSelectedTrack", 0x00);
     //Turn off "LOAD" LED button
     midi.sendShortMsg(channel + 0xB0, 0x01, 0x00);
 }
@@ -471,12 +482,11 @@ TraktorKontrolS4mk1.vuCallback4 = function(channel, control, value, status, grou
 // The button that enables/disables scratching
 TraktorKontrolS4mk1.wheelTouch = function(channel, control, value, status, group) {
     var deckNumber = script.deckFromGroup(group);
-    if ((status & 0xF0) === 0x90) { // If button down
-        //if (value === 0x7F) { // Some wheels send 0x90 on press and release, so you need to check the value
+    if (value > 0) { // Touch: CC value 0x7F
         var alpha = 1.0 / 8;
         var beta = alpha / 32;
         engine.scratchEnable(deckNumber, 128, 8, alpha, beta);
-    } else { // If button up
+    } else { // Release: CC value 0x00
         engine.scratchDisable(deckNumber);
     }
 }
@@ -484,15 +494,8 @@ TraktorKontrolS4mk1.wheelTouch = function(channel, control, value, status, group
 // The wheel that actually controls the scratching
 TraktorKontrolS4mk1.wheelTurn = function(channel, control, value, status, group) {
     var deckNumber = script.deckFromGroup(group);
-    var now = Date.now();
-    if (now - lastJogTime[deckNumber] < JOG_THROTTLE_MS) {
-        return;
-    }
-    lastJogTime[deckNumber] = now;
 
-    // --- Choose only one of the following!
-
-    // A: For a control that centers on 0:
+    // Relative encoder: 0-63 = forward, 64-127 = backward (-128 offset)
     var newValue;
     if (value < 64) {
         newValue = value;
@@ -500,16 +503,28 @@ TraktorKontrolS4mk1.wheelTurn = function(channel, control, value, status, group)
         newValue = value - 128;
     }
 
-    // B: For a control that centers on 0x40 (64):
-    //var newValue = value - 64;
+    // Adaptive throttle: small moves always pass through and reset the
+    // throttle window. Large moves are throttled and extend the window.
+    var now = Date.now();
+    var absVal = Math.abs(newValue);
 
-    // --- End choice
-
-    // In either case, register the movement
-    var deckNumber = script.deckFromGroup(group);
-    if (engine.isScratching(deckNumber)) {
-        engine.scratchTick(deckNumber, newValue); // Scratch!
+    if (absVal <= JOG_THROTTLE_THRESHOLD) {
+        lastJogTime[deckNumber] = 0;
     } else {
-        engine.setValue(group, 'jog', newValue); // Pitch bend
+        if (now - lastJogTime[deckNumber] > JOG_THROTTLE_RESET_MS) {
+            lastJogTime[deckNumber] = 0;
+        }
+        var throttle = (absVal - JOG_THROTTLE_THRESHOLD) / (63 - JOG_THROTTLE_THRESHOLD) * JOG_THROTTLE_MAX_MS;
+        if (now - lastJogTime[deckNumber] < throttle) {
+            return;
+        }
+        lastJogTime[deckNumber] = now;
+    }
+
+    if (engine.isScratching(deckNumber)) {
+        engine.scratchTick(deckNumber, newValue);
+    } else {
+        // Scale to -3.0..3.0 range: raw 0-63 maps to 0.0-3.0
+        engine.setValue(group, 'jog', newValue / 21.0);
     }
 }
