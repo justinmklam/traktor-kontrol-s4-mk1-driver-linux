@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<MixxxControllerPreset mixxxVersion="2.3.0" schemaVersion="1">
+<?xml version='1.0' encoding='utf-8'?>
+<MixxxControllerPreset schemaVersion="1" mixxxVersion="2.3.0">
     <info>
         <name>TraktorKontrol_S4_MK1_JFM</name>
         <author>Javier Fonseca</author>
@@ -11,242 +11,22 @@
         <controls>
             <control>
                 <group>[Channel1]</group>
-                <key>pitch_down</key>
-                <description>Pitch Up from button</description>
-                <status>0xB0</status>
-                <midino>0x64</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel2]</group>
-                <key>pitch_down</key>
-                <description>Pitch Up from button</description>
-                <status>0xB1</status>
-                <midino>0x64</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel3]</group>
-                <key>pitch_down</key>
-                <description>Pitch Up from button</description>
-                <status>0xB2</status>
-                <midino>0x64</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel4]</group>
-                <key>pitch_down</key>
-                <description>Pitch Up from button</description>
-                <status>0xB3</status>
-                <midino>0x64</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel1]</group>
-                <key>pitch_up</key>
-                <description>Pitch Up from button</description>
-                <status>0xB0</status>
-                <midino>0x62</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel2]</group>
-                <key>pitch_up</key>
-                <description>Pitch Up from button</description>
-                <status>0xB1</status>
-                <midino>0x62</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel3]</group>
-                <key>pitch_up</key>
-                <description>Pitch Up from button</description>
-                <status>0xB2</status>
-                <midino>0x62</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel4]</group>
-                <key>pitch_up</key>
-                <description>Pitch Up from button</description>
-                <status>0xB3</status>
-                <midino>0x62</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel1]</group>
-                <key>rate_perm_up_small</key>
-                <description>Pitch Up from button</description>
-                <status>0xB0</status>
-                <midino>0x61</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel2]</group>
-                <key>rate_perm_up_small</key>
-                <description>Pitch Up from button</description>
-                <status>0xB1</status>
-                <midino>0x61</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel3]</group>
-                <key>rate_perm_up_small</key>
-                <description>Pitch Up from button</description>
-                <status>0xB2</status>
-                <midino>0x61</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel4]</group>
-                <key>rate_perm_up_small</key>
-                <description>Pitch Up from button</description>
-                <status>0xB3</status>
-                <midino>0x61</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel1]</group>
-                <key>rate_perm_down_small</key>
-                <description>Pitch Down from button</description>
-                <status>0xB0</status>
-                <midino>0x63</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel2]</group>
-                <key>rate_perm_down_small</key>
-                <description>Pitch Down from button</description>
-                <status>0xB1</status>
-                <midino>0x63</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel3]</group>
-                <key>rate_perm_down_small</key>
-                <description>Pitch Down from button</description>
-                <status>0xB2</status>
-                <midino>0x63</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel4]</group>
-                <key>rate_perm_down_small</key>
-                <description>Pitch Down from button</description>
-                <status>0xB3</status>
-                <midino>0x63</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Master]</group>
-                <key>TraktorKontrolS4mk1.changeDeckAC</key>
-                <description>Change Deck A/C</description>
-                <status>0xB4</status>
-                <midino>0x70</midino>
-                <options>
-                    <script-binding/>
-                </options>
-            </control>
-            <control>
-                <group>[Master]</group>
-                <key>TraktorKontrolS4mk1.changeDeckBD</key>
-                <description>Change Deck B/D</description>
-                <status>0xB4</status>
-                <midino>0x71</midino>
-                <options>
-                    <script-binding/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel1]</group>
-                <key>TraktorKontrolS4mk1.fineRate</key>
-                <description>Shift jog wheel for fine rate 1% (pitch)</description>
-                <status>0xB0</status>
-                <midino>0x20</midino>
-                <options>
-                    <script-binding/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel2]</group>
-                <key>TraktorKontrolS4mk1.fineRate</key>
-                <description>Shift jog wheel for fine rate 1% (pitch)</description>
-                <status>0xB1</status>
-                <midino>0x20</midino>
-                <options>
-                    <script-binding/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel3]</group>
-                <key>TraktorKontrolS4mk1.fineRate</key>
-                <description>Shift jog wheel for fine rate 1% (pitch)</description>
-                <status>0xB2</status>
-                <midino>0x20</midino>
-                <options>
-                    <script-binding/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel4]</group>
-                <key>TraktorKontrolS4mk1.fineRate</key>
-                <description>Shift jog wheel for fine rate 1% (pitch)</description>
-                <status>0xB3</status>
-                <midino>0x20</midino>
-                <options>
-                    <script-binding/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel1]</group>
-                <key>TraktorKontrolS4mk1.loadSelectedTrack</key>
-                <description>MIDI Learned from 2 messages.</description>
+                <key>LoadSelectedTrack</key>
+                <description>MIDI Learned from 22 messages.</description>
                 <status>0xB0</status>
                 <midino>0x01</midino>
                 <options>
-                    <script-binding/>
+                    <normal/>
                 </options>
             </control>
             <control>
                 <group>[Channel2]</group>
-                <key>TraktorKontrolS4mk1.loadSelectedTrack</key>
-                <description>MIDI Learned from 2 messages.</description>
+                <key>LoadSelectedTrack</key>
+                <description>MIDI Learned from 27 messages.</description>
                 <status>0xB1</status>
                 <midino>0x01</midino>
                 <options>
-                    <script-binding/>
+                    <normal/>
                 </options>
             </control>
             <control>
@@ -265,6 +45,46 @@
                 <description>MIDI Learned from 2 messages.</description>
                 <status>0xB3</status>
                 <midino>0x01</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>TraktorKontrolS4mk1.wheelTurn</key>
+                <description>MIDI Learned from 2 messages.</description>
+                <status>0xB0</status>
+                <midino>0x02</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel2]</group>
+                <key>TraktorKontrolS4mk1.wheelTurn</key>
+                <description>MIDI Learned from 2 messages.</description>
+                <status>0xB1</status>
+                <midino>0x02</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel3]</group>
+                <key>TraktorKontrolS4mk1.wheelTurn</key>
+                <description>MIDI Learned from 2 messages.</description>
+                <status>0xB2</status>
+                <midino>0x02</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel4]</group>
+                <key>TraktorKontrolS4mk1.wheelTurn</key>
+                <description>MIDI Learned from 2 messages.</description>
+                <status>0xB3</status>
+                <midino>0x02</midino>
                 <options>
                     <script-binding/>
                 </options>
@@ -274,56 +94,6 @@
                 <key>TraktorKontrolS4mk1.browseUpDown</key>
                 <description>Scroll Up/Down on browser knob turn</description>
                 <status>0xB4</status>
-                <midino>0x02</midino>
-                <options>
-                    <script-binding/>
-                </options>
-            </control>
-            <control>
-                <group>[Library]</group>
-                <key>TraktorKontrolS4mk1.MoveFocusForward</key>
-                <description>Equivalent to pressing Tab on keyboard</description>
-                <status>0xB4</status>
-                <midino>0x07</midino>
-                <options>
-                    <script-binding/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel1]</group>
-                <key>TraktorKontrolS4mk1.wheelTurn</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB0</status>
-                <midino>0x02</midino>
-                <options>
-                    <script-binding/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel2]</group>
-                <key>TraktorKontrolS4mk1.wheelTurn</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB1</status>
-                <midino>0x02</midino>
-                <options>
-                    <script-binding/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel3]</group>
-                <key>TraktorKontrolS4mk1.wheelTurn</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB2</status>
-                <midino>0x02</midino>
-                <options>
-                    <script-binding/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel4]</group>
-                <key>TraktorKontrolS4mk1.wheelTurn</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB3</status>
                 <midino>0x02</midino>
                 <options>
                     <script-binding/>
@@ -430,26 +200,6 @@
                 </options>
             </control>
             <control>
-                <group>[Master]</group>
-                <key>headGain</key>
-                <description>Headphones Volume</description>
-                <status>0xB4</status>
-                <midino>0x56</midino>
-                <options>
-                    <normal />
-                </options>
-            </control>
-            <control>
-                <group>[Master]</group>
-                <key>gain</key>
-                <description>Master Volume Gain</description>
-                <status>0xB4</status>
-                <midino>0x57</midino>
-                <options>
-                    <normal />
-                </options>
-            </control>
-            <control>
                 <group>[Channel1]</group>
                 <key>beats_translate_later</key>
                 <description>MIDI Learned from 2 messages.</description>
@@ -490,6 +240,7 @@
                 </options>
             </control>
             <control>
+                <group></group>
                 <key>TraktorKontrolS4mk1.quantize</key>
                 <description>Quantize on/off for all channels and 16 samplers</description>
                 <status>0xB4</status>
@@ -539,47 +290,6 @@
                 </options>
             </control>
             <control>
-                <group>[Channel1]</group>
-                <key>beatjump_forward</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB0</status>
-                <midino>0x13</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel2]</group>
-                <key>beatjump_forward</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB1</status>
-                <midino>0x13</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel3]</group>
-                <key>beatjump_forward</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB2</status>
-                <midino>0x13</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel4]</group>
-                <key>beatjump_forward</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB3</status>
-                <midino>0x13</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-
-            <control>
                 <group>[Master]</group>
                 <key>headSplit</key>
                 <description>MIDI Learned from 2 messages.</description>
@@ -587,6 +297,16 @@
                 <midino>0x06</midino>
                 <options>
                     <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Library]</group>
+                <key>TraktorKontrolS4mk1.MoveFocusForward</key>
+                <description>Equivalent to pressing Tab on keyboard</description>
+                <status>0xB4</status>
+                <midino>0x07</midino>
+                <options>
+                    <script-binding/>
                 </options>
             </control>
             <control>
@@ -776,7 +496,7 @@
                 <status>0xB3</status>
                 <midino>0x0B</midino>
                 <options>
-                   <script-binding/>
+                    <script-binding/>
                 </options>
             </control>
             <control>
@@ -806,7 +526,7 @@
                 <status>0xB1</status>
                 <midino>0x0C</midino>
                 <options>
-                   <script-binding/>
+                    <script-binding/>
                 </options>
             </control>
             <control>
@@ -916,7 +636,7 @@
                 <status>0xB3</status>
                 <midino>0x0E</midino>
                 <options>
-                   <script-binding/>
+                    <script-binding/>
                 </options>
             </control>
             <control>
@@ -959,193 +679,46 @@
                     <normal/>
                 </options>
             </control>
-
-
-
-            <!--<control>
-                <group>[Sampler1]</group>
-                <key>cue_gotoandplay</key>
-                <status>0xB0</status>
-                <midino>0x10</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
             <control>
-                <group>[Sampler2]</group>
-                <key>cue_gotoandplay</key>
-                <status>0xB0</status>
-                <midino>0x10</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler3]</group>
-                <key>cue_gotoandplay</key>
-                <status>0xB0</status>
-                <midino>0x11</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler4]</group>
-                <key>cue_gotoandplay</key>
-                <status>0xB0</status>
-                <midino>0x12</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler5]</group>
-                <key>cue_gotoandplay</key>
-                <status>0xB0</status>
-                <midino>0x12</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler6]</group>
-                <key>cue_gotoandplay</key>
-                <status>0xB1</status>
-                <midino>0x10</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler7]</group>
-                <key>cue_gotoandplay</key>
-                <status>0xB1</status>
-                <midino>0x11</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler8]</group>
-                <key>cue_gotoandplay</key>
-                <status>0xB1</status>
-                <midino>0x12</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler9]</group>
-                <key>cue_gotoandplay</key>
-                <status>0xB1</status>
-                <midino>0x12</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler10]</group>
-                <key>cue_gotoandplay</key>
-                <status>0xB2</status>
-                <midino>0x10</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler11]</group>
-                <key>cue_gotoandplay</key>
-                <status>0xB2</status>
-                <midino>0x11</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler12]</group>
-                <key>cue_gotoandplay</key>
-                <status>0xB2</status>
-                <midino>0x12</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler13]</group>
-                <key>cue_gotoandplay</key>
-                <status>0xB2</status>
-                <midino>0x12</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler14]</group>
-                <key>cue_gotoandplay</key>
-                <status>0xB3</status>
-                <midino>0x10</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler15]</group>
-                <key>cue_gotoandplay</key>
-                <status>0xB3</status>
-                <midino>0x11</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler16]</group>
-                <key>cue_gotoandplay</key>
-                <status>0xB3</status>
-                <midino>0x12</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>-->
-            <!--<control>
                 <group>[Channel1]</group>
-                <key>TraktorKontrolS4mk1.beatJumpSize</key>
-                <description>Change jump size on knob rotation</description>
+                <key>beatjump_forward</key>
+                <description>MIDI Learned from 2 messages.</description>
                 <status>0xB0</status>
                 <midino>0x13</midino>
                 <options>
-                    <script-binding/>
+                    <normal/>
                 </options>
             </control>
             <control>
                 <group>[Channel2]</group>
-                <key>TraktorKontrolS4mk1.beatJumpSize</key>
-                <description>Change jump size on knob rotation</description>
+                <key>beatjump_forward</key>
+                <description>MIDI Learned from 2 messages.</description>
                 <status>0xB1</status>
                 <midino>0x13</midino>
                 <options>
-                    <script-binding/>
+                    <normal/>
                 </options>
             </control>
             <control>
                 <group>[Channel3]</group>
-                <key>TraktorKontrolS4mk1.beatJumpSize</key>
-                <description>Change jump size on knob rotation</description>
+                <key>beatjump_forward</key>
+                <description>MIDI Learned from 2 messages.</description>
                 <status>0xB2</status>
                 <midino>0x13</midino>
                 <options>
-                    <script-binding/>
+                    <normal/>
                 </options>
             </control>
             <control>
                 <group>[Channel4]</group>
-                <key>TraktorKontrolS4mk1.beatJumpSize</key>
-                <description>Change jump size on knob rotation</description>
+                <key>beatjump_forward</key>
+                <description>MIDI Learned from 2 messages.</description>
                 <status>0xB3</status>
                 <midino>0x13</midino>
                 <options>
-                    <script-binding/>
+                    <normal/>
                 </options>
-            </control>-->
+            </control>
             <control>
                 <group>[Channel1]</group>
                 <key>beatjump_backward</key>
@@ -1263,7 +836,7 @@
                 <status>0xB1</status>
                 <midino>0x16</midino>
                 <options>
-                   <script-binding/>
+                    <script-binding/>
                 </options>
             </control>
             <control>
@@ -1386,16 +959,6 @@
                     <normal/>
                 </options>
             </control>
-            <!--<control>
-                <group>[Channel1]</group>
-                <key>intro_start_clear</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB4</status>
-                <midino>0x18</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>-->
             <control>
                 <group>[EffectRack1_EffectUnit1_Effect1]</group>
                 <key>enabled</key>
@@ -1483,6 +1046,46 @@
                 <midino>0x1F</midino>
                 <options>
                     <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>TraktorKontrolS4mk1.fineRate</key>
+                <description>Shift jog wheel for fine rate 1% (pitch)</description>
+                <status>0xB0</status>
+                <midino>0x20</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel2]</group>
+                <key>TraktorKontrolS4mk1.fineRate</key>
+                <description>Shift jog wheel for fine rate 1% (pitch)</description>
+                <status>0xB1</status>
+                <midino>0x20</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel3]</group>
+                <key>TraktorKontrolS4mk1.fineRate</key>
+                <description>Shift jog wheel for fine rate 1% (pitch)</description>
+                <status>0xB2</status>
+                <midino>0x20</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel4]</group>
+                <key>TraktorKontrolS4mk1.fineRate</key>
+                <description>Shift jog wheel for fine rate 1% (pitch)</description>
+                <status>0xB3</status>
+                <midino>0x20</midino>
+                <options>
+                    <script-binding/>
                 </options>
             </control>
             <control>
@@ -1805,29 +1408,37 @@
                     <normal/>
                 </options>
             </control>
-            <!--<control>
-                <group>[Channel4]</group>
-                <key>intro_start_clear</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB3</status>
-                <midino>0x2D</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>-->
             <control>
-                <group>[Sampler1]</group>
+                <group>[Sampler2]</group>
                 <key>TraktorKontrolS4mk1.manageSampler</key>
                 <status>0xB0</status>
-                <midino>0x3A</midino>
+                <midino>0x2E</midino>
                 <options>
                     <script-binding/>
                 </options>
             </control>
             <control>
-                <group>[Sampler2]</group>
+                <group>[Sampler6]</group>
                 <key>TraktorKontrolS4mk1.manageSampler</key>
-                <status>0xB0</status>
+                <status>0xB1</status>
+                <midino>0x2E</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Sampler10]</group>
+                <key>TraktorKontrolS4mk1.manageSampler</key>
+                <status>0xB2</status>
+                <midino>0x2E</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Sampler14]</group>
+                <key>TraktorKontrolS4mk1.manageSampler</key>
+                <status>0xB3</status>
                 <midino>0x2E</midino>
                 <options>
                     <script-binding/>
@@ -1843,64 +1454,10 @@
                 </options>
             </control>
             <control>
-                <group>[Sampler4]</group>
-                <key>TraktorKontrolS4mk1.manageSampler</key>
-                <status>0xB0</status>
-                <midino>0x30</midino>
-                <options>
-                    <script-binding/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler5]</group>
-                <key>TraktorKontrolS4mk1.manageSampler</key>
-                <status>0xB1</status>
-                <midino>0x3A</midino>
-                <options>
-                    <script-binding/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler6]</group>
-                <key>TraktorKontrolS4mk1.manageSampler</key>
-                <status>0xB1</status>
-                <midino>0x2E</midino>
-                <options>
-                    <script-binding/>
-                </options>
-            </control>
-             <control>
                 <group>[Sampler7]</group>
                 <key>TraktorKontrolS4mk1.manageSampler</key>
                 <status>0xB1</status>
                 <midino>0x2F</midino>
-                <options>
-                    <script-binding/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler8]</group>
-                <key>TraktorKontrolS4mk1.manageSampler</key>
-                <status>0xB1</status>
-                <midino>0x30</midino>
-                <options>
-                    <script-binding/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler9]</group>
-                <key>TraktorKontrolS4mk1.manageSampler</key>
-                <status>0xB2</status>
-                <midino>0x3A</midino>
-                <options>
-                    <script-binding/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler10]</group>
-                <key>TraktorKontrolS4mk1.manageSampler</key>
-                <status>0xB2</status>
-                <midino>0x2E</midino>
                 <options>
                     <script-binding/>
                 </options>
@@ -1915,37 +1472,37 @@
                 </options>
             </control>
             <control>
-                <group>[Sampler12]</group>
+                <group>[Sampler15]</group>
                 <key>TraktorKontrolS4mk1.manageSampler</key>
-                <status>0xB2</status>
+                <status>0xB3</status>
+                <midino>0x2F</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Sampler4]</group>
+                <key>TraktorKontrolS4mk1.manageSampler</key>
+                <status>0xB0</status>
                 <midino>0x30</midino>
                 <options>
                     <script-binding/>
                 </options>
             </control>
             <control>
-                <group>[Sampler13]</group>
+                <group>[Sampler8]</group>
                 <key>TraktorKontrolS4mk1.manageSampler</key>
-                <status>0xB3</status>
-                <midino>0x3A</midino>
+                <status>0xB1</status>
+                <midino>0x30</midino>
                 <options>
                     <script-binding/>
                 </options>
             </control>
             <control>
-                <group>[Sampler14]</group>
+                <group>[Sampler12]</group>
                 <key>TraktorKontrolS4mk1.manageSampler</key>
-                <status>0xB3</status>
-                <midino>0x2E</midino>
-                <options>
-                    <script-binding/>
-                </options>
-            </control>
-            <control>
-                <group>[Sampler15]</group>
-                <key>TraktorKontrolS4mk1.manageSampler</key>
-                <status>0xB3</status>
-                <midino>0x2F</midino>
+                <status>0xB2</status>
+                <midino>0x30</midino>
                 <options>
                     <script-binding/>
                 </options>
@@ -1959,156 +1516,42 @@
                     <script-binding/>
                 </options>
             </control>
-            <!--<control>
-                <group>[Channel1]</group>
-                <key>beatjump_backward</key>
-                <description>MIDI Learned from 2 messages.</description>
+            <control>
+                <group>[Sampler1]</group>
+                <key>TraktorKontrolS4mk1.manageSampler</key>
                 <status>0xB0</status>
-                <midino>0x32</midino>
+                <midino>0x3A</midino>
                 <options>
-                    <normal/>
+                    <script-binding/>
                 </options>
             </control>
             <control>
-                <group>[Channel2]</group>
-                <key>beatjump_backward</key>
-                <description>MIDI Learned from 2 messages.</description>
+                <group>[Sampler5]</group>
+                <key>TraktorKontrolS4mk1.manageSampler</key>
                 <status>0xB1</status>
-                <midino>0x32</midino>
+                <midino>0x3A</midino>
                 <options>
-                    <normal/>
+                    <script-binding/>
                 </options>
             </control>
             <control>
-                <group>[Channel3]</group>
-                <key>beatjump_backward</key>
-                <description>MIDI Learned from 2 messages.</description>
+                <group>[Sampler9]</group>
+                <key>TraktorKontrolS4mk1.manageSampler</key>
                 <status>0xB2</status>
-                <midino>0x32</midino>
+                <midino>0x3A</midino>
                 <options>
-                    <normal/>
+                    <script-binding/>
                 </options>
             </control>
             <control>
-                <group>[Channel4]</group>
-                <key>beatjump_backward</key>
-                <description>MIDI Learned from 2 messages.</description>
+                <group>[Sampler13]</group>
+                <key>TraktorKontrolS4mk1.manageSampler</key>
                 <status>0xB3</status>
-                <midino>0x32</midino>
+                <midino>0x3A</midino>
                 <options>
-                    <normal/>
-                </options>
-            </control>-->
-            <!--<control>
-                <group>[Channel1]</group>
-                <key>loop_exit</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB0</status>
-                <midino>0x34</midino>
-                <options>
-                    <normal/>
+                    <script-binding/>
                 </options>
             </control>
-            <control>
-                <group>[Channel2]</group>
-                <key>loop_exit</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB1</status>
-                <midino>0x34</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel3]</group>
-                <key>loop_exit</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB2</status>
-                <midino>0x34</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel4]</group>
-                <key>loop_exit</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB3</status>
-                <midino>0x34</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>-->
-            <!--<control>
-                <group>[Channel1]</group>
-                <key>loop_in</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB0</status>
-                <midino>0x35</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel2]</group>
-                <key>loop_in</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB1</status>
-                <midino>0x35</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel3]</group>
-                <key>loop_in</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB2</status>
-                <midino>0x35</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel4]</group>
-                <key>loop_in</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB3</status>
-                <midino>0x35</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel1]</group>
-                <key>loop_out</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB0</status>
-                <midino>0x36</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel2]</group>
-                <key>loop_out</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB1</status>
-                <midino>0x36</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>
-            <control>
-                <group>[Channel4]</group>
-                <key>loop_out</key>
-                <description>MIDI Learned from 2 messages.</description>
-                <status>0xB3</status>
-                <midino>0x36</midino>
-                <options>
-                    <normal/>
-                </options>
-            </control>-->
             <control>
                 <group>[Channel1]</group>
                 <key>pregain</key>
@@ -2156,7 +1599,7 @@
                 <status>0xB0</status>
                 <midino>0x3D</midino>
                 <options>
-                    <normal />
+                    <normal/>
                 </options>
             </control>
             <control>
@@ -2166,7 +1609,7 @@
                 <status>0xB1</status>
                 <midino>0x3D</midino>
                 <options>
-                    <normal />
+                    <normal/>
                 </options>
             </control>
             <control>
@@ -2176,7 +1619,7 @@
                 <status>0xB2</status>
                 <midino>0x3D</midino>
                 <options>
-                    <normal />
+                    <normal/>
                 </options>
             </control>
             <control>
@@ -2186,7 +1629,7 @@
                 <status>0xB3</status>
                 <midino>0x3D</midino>
                 <options>
-                    <normal />
+                    <normal/>
                 </options>
             </control>
             <control>
@@ -2500,9 +1943,9 @@
                 </options>
             </control>
             <control>
-                <group>[Channel4]</group>
-                <key>volume</key>
-                <description>MIDI Learned from 1430 messages.</description>
+                <group>[Master]</group>
+                <key>balance</key>
+                <description>MIDI Learned from 5 messages.</description>
                 <status>0xB3</status>
                 <midino>0x45</midino>
                 <options>
@@ -2519,10 +1962,217 @@
                     <script-binding/>
                 </options>
             </control>
+            <control>
+                <group>[Master]</group>
+                <key>headGain</key>
+                <description>Headphones Volume</description>
+                <status>0xB4</status>
+                <midino>0x56</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Master]</group>
+                <key>gain</key>
+                <description>Master Volume Gain</description>
+                <status>0xB4</status>
+                <midino>0x57</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>rate_perm_up_small</key>
+                <description>Pitch Up from button</description>
+                <status>0xB0</status>
+                <midino>0x61</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel2]</group>
+                <key>rate_perm_up_small</key>
+                <description>Pitch Up from button</description>
+                <status>0xB1</status>
+                <midino>0x61</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel3]</group>
+                <key>rate_perm_up_small</key>
+                <description>Pitch Up from button</description>
+                <status>0xB2</status>
+                <midino>0x61</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel4]</group>
+                <key>rate_perm_up_small</key>
+                <description>Pitch Up from button</description>
+                <status>0xB3</status>
+                <midino>0x61</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>pitch_up</key>
+                <description>Pitch Up from button</description>
+                <status>0xB0</status>
+                <midino>0x62</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel2]</group>
+                <key>pitch_up</key>
+                <description>Pitch Up from button</description>
+                <status>0xB1</status>
+                <midino>0x62</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel3]</group>
+                <key>pitch_up</key>
+                <description>Pitch Up from button</description>
+                <status>0xB2</status>
+                <midino>0x62</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel4]</group>
+                <key>pitch_up</key>
+                <description>Pitch Up from button</description>
+                <status>0xB3</status>
+                <midino>0x62</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>rate_perm_down_small</key>
+                <description>Pitch Down from button</description>
+                <status>0xB0</status>
+                <midino>0x63</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel2]</group>
+                <key>rate_perm_down_small</key>
+                <description>Pitch Down from button</description>
+                <status>0xB1</status>
+                <midino>0x63</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel3]</group>
+                <key>rate_perm_down_small</key>
+                <description>Pitch Down from button</description>
+                <status>0xB2</status>
+                <midino>0x63</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel4]</group>
+                <key>rate_perm_down_small</key>
+                <description>Pitch Down from button</description>
+                <status>0xB3</status>
+                <midino>0x63</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel1]</group>
+                <key>pitch_down</key>
+                <description>Pitch Up from button</description>
+                <status>0xB0</status>
+                <midino>0x64</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel2]</group>
+                <key>pitch_down</key>
+                <description>Pitch Up from button</description>
+                <status>0xB1</status>
+                <midino>0x64</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel3]</group>
+                <key>pitch_down</key>
+                <description>Pitch Up from button</description>
+                <status>0xB2</status>
+                <midino>0x64</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Channel4]</group>
+                <key>pitch_down</key>
+                <description>Pitch Up from button</description>
+                <status>0xB3</status>
+                <midino>0x64</midino>
+                <options>
+                    <normal/>
+                </options>
+            </control>
+            <control>
+                <group>[Master]</group>
+                <key>TraktorKontrolS4mk1.changeDeckAC</key>
+                <description>Change Deck A/C</description>
+                <status>0xB4</status>
+                <midino>0x70</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
+            <control>
+                <group>[Master]</group>
+                <key>TraktorKontrolS4mk1.changeDeckBD</key>
+                <description>Change Deck B/D</description>
+                <status>0xB4</status>
+                <midino>0x71</midino>
+                <options>
+                    <script-binding/>
+                </options>
+            </control>
         </controls>
         <outputs>
             <output>
                 <group>[Channel1]</group>
+                <key>beatloop_size</key>
+                <status>0xB0</status>
+                <midino>0x50</midino>
+                <maximum>127</maximum>
+            </output>
+            <output>
+                <group>[Channel1]</group>
                 <key>cue_default</key>
                 <description>MIDI Learned from 2 messages.</description>
                 <status>0xB0</status>
@@ -2530,14 +2180,6 @@
                 <maximum>127</maximum>
                 <minimum>0.1</minimum>
             </output>
-            <!--<output>
-                <group>[Channel1]</group>
-                <key>intro_start_activate</key>
-                <status>0xB0</status>
-                <midino>0x0F</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>-->
             <output>
                 <group>[Channel1]</group>
                 <key>pfl</key>
@@ -2566,6 +2208,13 @@
             </output>
             <output>
                 <group>[Channel2]</group>
+                <key>beatloop_size</key>
+                <status>0xB1</status>
+                <midino>0x50</midino>
+                <maximum>127</maximum>
+            </output>
+            <output>
+                <group>[Channel2]</group>
                 <key>cue_default</key>
                 <description>MIDI Learned from 2 messages.</description>
                 <status>0xB1</status>
@@ -2601,6 +2250,13 @@
             </output>
             <output>
                 <group>[Channel3]</group>
+                <key>beatloop_size</key>
+                <status>0xB2</status>
+                <midino>0x50</midino>
+                <maximum>127</maximum>
+            </output>
+            <output>
+                <group>[Channel3]</group>
                 <key>cue_default</key>
                 <description>MIDI Learned from 2 messages.</description>
                 <status>0xB2</status>
@@ -2633,6 +2289,13 @@
                 <midino>0x08</midino>
                 <maximum>127</maximum>
                 <minimum>0.1</minimum>
+            </output>
+            <output>
+                <group>[Channel4]</group>
+                <key>beatloop_size</key>
+                <status>0xB3</status>
+                <midino>0x50</midino>
+                <maximum>127</maximum>
             </output>
             <output>
                 <group>[Channel4]</group>
@@ -2812,230 +2475,6 @@
                 <midino>0x09</midino>
                 <maximum>127</maximum>
                 <minimum>0.1</minimum>
-            </output>
-            <!--<output>
-                <group>[Sampler10]</group>
-                <key>play</key>
-                <status>0xB2</status>
-                <midino>0x10</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler10]</group>
-                <key>start_stop</key>
-                <status>0xB2</status>
-                <midino>0x2E</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler11]</group>
-                <key>play</key>
-                <status>0xB2</status>
-                <midino>0x11</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler11]</group>
-                <key>start_stop</key>
-                <status>0xB2</status>
-                <midino>0x2F</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler12]</group>
-                <key>play</key>
-                <status>0xB2</status>
-                <midino>0x12</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler12]</group>
-                <key>start_stop</key>
-                <status>0xB2</status>
-                <midino>0x30</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler14]</group>
-                <key>play</key>
-                <status>0xB3</status>
-                <midino>0x10</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler14]</group>
-                <key>start_stop</key>
-                <status>0xB3</status>
-                <midino>0x2E</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler15]</group>
-                <key>play</key>
-                <status>0xB3</status>
-                <midino>0x11</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler15]</group>
-                <key>start_stop</key>
-                <status>0xB3</status>
-                <midino>0x2F</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler16]</group>
-                <key>play</key>
-                <status>0xB3</status>
-                <midino>0x12</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler16]</group>
-                <key>start_stop</key>
-                <status>0xB3</status>
-                <midino>0x30</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler2]</group>
-                <key>play</key>
-                <status>0xB0</status>
-                <midino>0x10</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler2]</group>
-                <key>start_stop</key>
-                <status>0xB0</status>
-                <midino>0x2E</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler3]</group>
-                <key>play</key>
-                <status>0xB0</status>
-                <midino>0x11</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler3]</group>
-                <key>start_stop</key>
-                <status>0xB0</status>
-                <midino>0x2F</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler4]</group>
-                <key>play</key>
-                <status>0xB0</status>
-                <midino>0x12</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler4]</group>
-                <key>start_stop</key>
-                <status>0xB0</status>
-                <midino>0x30</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler6]</group>
-                <key>play</key>
-                <status>0xB1</status>
-                <midino>0x10</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler6]</group>
-                <key>start_stop</key>
-                <status>0xB1</status>
-                <midino>0x2E</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler7]</group>
-                <key>play</key>
-                <status>0xB1</status>
-                <midino>0x11</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler7]</group>
-                <key>start_stop</key>
-                <status>0xB1</status>
-                <midino>0x2F</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler8]</group>
-                <key>play</key>
-                <status>0xB1</status>
-                <midino>0x12</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>
-            <output>
-                <group>[Sampler8]</group>
-                <key>start_stop</key>
-                <status>0xB1</status>
-                <midino>0x30</midino>
-                <maximum>127</maximum>
-                <minimum>0.1</minimum>
-            </output>-->
-            <output>
-                <group>[Channel1]</group>
-                <key>beatloop_size</key>
-                <status>0xB0</status>
-                <midino>0x50</midino>
-                <maximum>127</maximum>
-                <minimum>0</minimum>
-            </output>
-            <output>
-                <group>[Channel2]</group>
-                <key>beatloop_size</key>
-                <status>0xB1</status>
-                <midino>0x50</midino>
-                <maximum>127</maximum>
-                <minimum>0</minimum>
-            </output>
-            <output>
-                <group>[Channel3]</group>
-                <key>beatloop_size</key>
-                <status>0xB2</status>
-                <midino>0x50</midino>
-                <maximum>127</maximum>
-                <minimum>0</minimum>
-            </output>
-            <output>
-                <group>[Channel4]</group>
-                <key>beatloop_size</key>
-                <status>0xB3</status>
-                <midino>0x50</midino>
-                <maximum>127</maximum>
-                <minimum>0</minimum>
             </output>
         </outputs>
     </controller>
