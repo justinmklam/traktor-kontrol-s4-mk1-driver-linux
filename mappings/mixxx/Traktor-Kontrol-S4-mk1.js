@@ -37,10 +37,11 @@ TraktorKontrolS4mk1.init = function(id, debugging) {
             midi.sendShortMsg(0xB0 + chan, i, 0x00);
         }
     }*/
-    engine.makeConnection("[Channel1]", 'VuMeter', TraktorKontrolS4mk1.vuCallback);
-    engine.makeConnection("[Channel2]", 'VuMeter', TraktorKontrolS4mk1.vuCallback2);
-    engine.makeConnection("[Channel3]", 'VuMeter', TraktorKontrolS4mk1.vuCallback3);
-    engine.makeConnection("[Channel4]", 'VuMeter', TraktorKontrolS4mk1.vuCallback4);
+    // Disabled to avoid continuous MIDI feedback into synchronous ALSA LED writes.
+    // engine.makeConnection("[Channel1]", 'VuMeter', TraktorKontrolS4mk1.vuCallback);
+    // engine.makeConnection("[Channel2]", 'VuMeter', TraktorKontrolS4mk1.vuCallback2);
+    // engine.makeConnection("[Channel3]", 'VuMeter', TraktorKontrolS4mk1.vuCallback3);
+    // engine.makeConnection("[Channel4]", 'VuMeter', TraktorKontrolS4mk1.vuCallback4);
 
 
     // Set gain knobs to center value

@@ -19,11 +19,17 @@ Jog::Jog(int in_code, string in_name, int in_value){
   name = in_name;
   value = in_value;
   sensitivity = 5;
+  counter = 0;
+  updated = 0;
   prev_control_value = -1000;
 }
 
 int Jog::handle_event(RtMidiOut *midi_out, bool shift_ch1, bool shift_ch2, bool toggle_ac, bool toggle_bd, ConfigHelper *config_helper){
   shared_ptr<spdlog::logger> logger = spdlog::get(config_helper->get_string_value("traktor_s4_logger_name"));
+  const int configured_sensitivity = config_helper->get_int_value("jog_wheel_sensitivity");
+  if (configured_sensitivity > 0) {
+    sensitivity = configured_sensitivity;
+  }
   if (MidiEventOut::midi_mapping.find(code) != MidiEventOut::midi_mapping.end()) {
     MidiEventOut *midi_event = MidiEventOut::midi_mapping[code];
     logger->debug("[Jog::handle_event] Jog Wheel {0} with Code: {1} and Value {2}", name, code, value);
