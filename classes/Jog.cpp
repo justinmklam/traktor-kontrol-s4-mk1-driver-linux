@@ -49,6 +49,9 @@ int Jog::handle_event(RtMidiOut *midi_out, bool shift_ch1, bool shift_ch2, bool 
     if (midi_value == -1000){
       return 0;
     }
+    if ((midi_event->controller_type == "JOG_ROT") && (midi_value == 0)) {
+      return 0;
+    }
 
     auto message = UtilsHelper::create_message(shift_ch1, shift_ch2, toggle_ac, toggle_bd, midi_event, (unsigned char)midi_value);
 

@@ -6,6 +6,7 @@ Knob *knob_dev;
 Slider *slider_dev;
 Jog *jog_dev;
 Button *button_dev;
+map<__u16, __s32> last_abs_values;
 
 const map<__u16, string> EvDevEvent::types = {
         {0, "EV_SYN"},
@@ -40,6 +41,13 @@ void EvDevEvent::handle_with(RtMidiOut *midi_out, int controller_id, bool shift_
         }
     }
     else if (type_string == "EV_ABS"){
+        const auto last_value = last_abs_values.find(code);
+        if ((last_value != last_abs_values.end()) &&
+            (last_value->second == value)) {
+            return;
+        }
+        last_abs_values[code] = value;
+
         if (Slider::sliders_mapping.find(code) != Slider::sliders_mapping.end()){
             slider_dev = Slider::sliders_mapping[code];
             if (slider_dev == nullptr){
