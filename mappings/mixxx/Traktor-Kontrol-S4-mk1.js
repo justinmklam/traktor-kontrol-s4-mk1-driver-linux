@@ -12,6 +12,7 @@ var quantizeVal; // Flag for turning on/off quantize
 var syncSamplers = true; // Flag for turning on/off sync on all samplers
 var deck_ac_current = "A";
 var deck_bd_current = "B";
+var jogTouchReleaseTimers = {};
 const beatJumps = [0.03125, 0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64] //Available beat loop
 
 function TraktorKontrolS4mk1() {}
@@ -449,12 +450,27 @@ TraktorKontrolS4mk1.vuCallback4 = function(channel, control, value, status, grou
 // The button that enables/disables scratching
 TraktorKontrolS4mk1.wheelTouch = function(channel, control, value, status, group) {
     var deckNumber = script.deckFromGroup(group);
-    if ((status & 0xF0) === 0x90) { // If button down
-        //if (value === 0x7F) { // Some wheels send 0x90 on press and release, so you need to check the value
-        var alpha = 1.0 / 8;
-        var beta = alpha / 32;
-        engine.scratchEnable(deckNumber, 128, 8, alpha, beta);
-    } else { // If button up
+    var timer = jogTouchReleaseTimers[deckNumber];
+
+    if (timer) {
+        engine.stopTimer(timer);
+        delete jogTouchReleaseTimers[deckNumber];
+    }
+
+    if (value > 0) { // Touch down
+        if (!engine.isScratching(deckNumber)) {
+            var alpha = 1.0 / 8;
+            var beta = alpha / 32;
+            engine.scratchEnable(deckNumber, 128, 8, alpha, beta);
+        }
+
+        // The S4's touch sensor sends repeated touch values but no release.
+        // Consider the touch released once that stream has been quiet briefly.
+        jogTouchReleaseTimers[deckNumber] = engine.beginTimer(100, function() {
+            engine.scratchDisable(deckNumber);
+            delete jogTouchReleaseTimers[deckNumber];
+        }, true);
+    } else { // Touch up
         engine.scratchDisable(deckNumber);
     }
 }
