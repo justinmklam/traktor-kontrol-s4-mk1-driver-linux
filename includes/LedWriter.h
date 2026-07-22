@@ -3,6 +3,7 @@
 
 // ---
 #include <alsa/asoundlib.h>
+
 #include <atomic>
 #include <condition_variable>
 #include <map>
@@ -26,9 +27,10 @@ class LedWriter {
   void worker_loop();
   bool open_control();
   void close_control();
-  void write_led(int control_id, int value);
+  bool write_led(int control_id, int value);
 
   int card_id_;
+  ConfigHelper* config_helper_;
   std::shared_ptr<spdlog::logger> logger_;
   snd_ctl_t* control_ = nullptr;
   std::thread worker_;
