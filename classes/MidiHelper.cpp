@@ -10,6 +10,7 @@ class callbackData{
   bool toggle_ac = false;
   bool toggle_bd = false;
   ConfigHelper *config{};
+  LedWriter* led_writer{};
 };
 
 MidiHelper::MidiHelper(ConfigHelper *config){
@@ -28,6 +29,8 @@ MidiHelper::MidiHelper(ConfigHelper *config){
       auto *data = new callbackData();
       data->traktor_device_id = traktor_device_id;
       data->config = config;
+      led_writer_ = make_unique<LedWriter>(traktor_device_id, config);
+      data->led_writer = led_writer_.get();
 
       pMidiIn->setErrorCallback(reinterpret_cast<RtMidiErrorCallback>(midi_in_error_callback), (void *) data);
       pMidiIn->setCallback(reinterpret_cast<RtMidiIn::RtMidiCallback>(midi_in_callback), (void *) data);
@@ -73,8 +76,9 @@ RtMidiIn::RtMidiCallback MidiHelper::midi_in_callback(double deltatime, std::vec
     try {
       auto it = MidiEventIn::midi_in_mapping.find((char)status);
       if ((it != MidiEventIn::midi_in_mapping.end()) && (channel >= 0xb0) && (channel <= 0xb4)){
-        if ((status == 0x50) && (value >= 0x0) && (value <= 0xc)){
-          if (!UtilsHelper::show_beat_loop_display(channel, status, value, data->traktor_device_id, data->config))
+        if ((status == 0x50) && (value < 12)){
+          if (!UtilsHelper::show_beat_loop_display(channel, status, value,
+                                                    data->led_writer))
           {
             logger->debug("[MidiHelper::midi_in_callback] Error processing beat loop size: Channel: {0} Status: {1} Value: {2}", channel, status, value);
             return nullptr;
@@ -85,7 +89,8 @@ RtMidiIn::RtMidiCallback MidiHelper::midi_in_callback(double deltatime, std::vec
         string control_id = it->second->check_channel_value(channel);
 
         if ((control_id != "-") && control_id.length() > 3){
-          if (!UtilsHelper::show_vumeters_leds(value, data->traktor_device_id, control_id, data->config)){
+          if (!UtilsHelper::show_vumeters_leds(value, control_id,
+                                               data->led_writer)){
             logger->debug("[MidiHelper::midi_in_callback] Error processing vu meters: Channel: {0} Status: {1} Value: {2}", channel, status, value);
             return nullptr;
           }
@@ -94,7 +99,8 @@ RtMidiIn::RtMidiCallback MidiHelper::midi_in_callback(double deltatime, std::vec
         }
         else{
           if (control_id != "-"){
-            if (!UtilsHelper::show_static_leds(value, data->traktor_device_id, control_id, data->config)){
+            if (!UtilsHelper::show_static_leds(value, control_id,
+                                               data->led_writer)){
               logger->debug("[MidiHelper::midi_in_callback] Error processing static Led: Channel: {0} Status: {1} Value: {2}", channel, status, value);
               return nullptr;
             }

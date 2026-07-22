@@ -15,6 +15,7 @@
 #include "Jog.h"
 #include "Knob.h"
 #include "Led.h"
+#include "LedWriter.h"
 #include "EvDevHelper.h"
 #include "UtilsHelper.h"
 #include "MidiEventIn.h"
@@ -32,6 +33,7 @@ class MidiHelper
                                                       const string &error_message,
                                                       void *user_data);
     ConfigHelper *config_helper;
+    std::unique_ptr<LedWriter> led_writer_;
 
  public:
     MidiHelper(ConfigHelper *config);

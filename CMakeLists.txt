@@ -15,6 +15,7 @@ add_executable(traktor_kontrol_s4_mk1_driver_linux
         includes/Knob.h
         includes/Slider.h
         includes/Led.h
+        includes/LedWriter.h
         includes/EvDevEvent.h
         includes/Jog.h
         includes/MidiEventOut.h
@@ -29,6 +30,7 @@ add_executable(traktor_kontrol_s4_mk1_driver_linux
         classes/Knob.cpp
         classes/Slider.cpp
         classes/Led.cpp
+        classes/LedWriter.cpp
         classes/EvDevEvent.cpp
         classes/Jog.cpp
         classes/MidiEventOut.cpp

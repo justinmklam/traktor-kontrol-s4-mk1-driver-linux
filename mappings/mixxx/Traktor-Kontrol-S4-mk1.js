@@ -88,7 +88,6 @@ TraktorKontrolS4mk1.manageSampler = function(channel, control, value, status, gr
 }
 
 TraktorKontrolS4mk1.changeDeckAC = function(channel, control, value, status, group) {
-    print("Change Deck AC");
     if (value == 0)
         return;
     if (deck_ac_current == "A") {
@@ -104,7 +103,6 @@ TraktorKontrolS4mk1.changeDeckAC = function(channel, control, value, status, gro
 
         // Set Loop Size to Deck C
         var actualBeatLoop = engine.getValue("[Channel3]", 'beatloop_size');
-        print('Beat loop size: ' + actualBeatLoop);
         var beatId = 0
         for (var i = 0; i <= 11; i++) {
             if (actualBeatLoop == beatJumps[i]) beatId = i;
@@ -122,7 +120,6 @@ TraktorKontrolS4mk1.changeDeckAC = function(channel, control, value, status, gro
         }
         // Set Loop Size to Deck A
         var actualBeatLoop = engine.getValue("[Channel1]", 'beatloop_size');
-        print('Beat loop size: ' + actualBeatLoop);
         var beatId = 0
         for (var i = 0; i <= 11; i++) {
             if (actualBeatLoop == beatJumps[i]) beatId = i;
@@ -132,11 +129,9 @@ TraktorKontrolS4mk1.changeDeckAC = function(channel, control, value, status, gro
 
 
 
-    print("Current Deck is: " + deck_ac_current);
 }
 
 TraktorKontrolS4mk1.changeDeckBD = function(channel, control, value, status, group) {
-    print("Change Deck BD");
     if (value == 0)
         return;
     if (deck_bd_current == "B") {
@@ -151,7 +146,6 @@ TraktorKontrolS4mk1.changeDeckBD = function(channel, control, value, status, gro
         }
         // Set Loop Size to Deck D
         var actualBeatLoop = engine.getValue("[Channel4]", 'beatloop_size');
-        print('Beat loop size: ' + actualBeatLoop);
         var beatId = 0
         for (var i = 0; i <= 11; i++) {
             if (actualBeatLoop == beatJumps[i]) beatId = i;
@@ -169,19 +163,16 @@ TraktorKontrolS4mk1.changeDeckBD = function(channel, control, value, status, gro
         }
         // Set Loop Size to Deck B
         var actualBeatLoop = engine.getValue("[Channel2]", 'beatloop_size');
-        print('Beat loop size: ' + actualBeatLoop);
         var beatId = 0
         for (var i = 0; i <= 11; i++) {
             if (actualBeatLoop == beatJumps[i]) beatId = i;
         }
         midi.sendShortMsg(0xB1, 0x50, beatId);
     }
-    print("Current Deck is: " + deck_bd_current);
 }
 
 TraktorKontrolS4mk1.fineRate = function(channel, control, value, status, group) {
     var actualRate = engine.getValue(group, 'rate');
-    print('Actal rate: ' + actualRate);
     if (value > 1) engine.setValue(group, 'rate', actualRate + 0.001);
     else engine.setValue(group, 'rate', actualRate - 0.001);
 }
@@ -228,13 +219,11 @@ TraktorKontrolS4mk1.quantize = function(channel, control, value, status, group) 
 }
 
 TraktorKontrolS4mk1.setHeadGain = function(channel, control, value, status, group) {
-    print("Set Head Gain");
 }
 
 // Change loop size on knob rotation
 TraktorKontrolS4mk1.beatLoopSize = function(channel, control, value, status, group) {
     var actualBeatLoop = engine.getValue(group, 'beatloop_size');
-    print('Beat loop size: ' + actualBeatLoop);
     var actualBeatJump = engine.getValue(group, 'beatjump_size');
     var beatIdLoop = 0;
     var beatIdJump = 0;
@@ -242,10 +231,8 @@ TraktorKontrolS4mk1.beatLoopSize = function(channel, control, value, status, gro
         if (actualBeatLoop == beatJumps[i]) beatIdLoop = i;
         if (actualBeatJump == beatJumps[i]) beatIdJump = i;
     }
-    print('beatId: ' + beatIdLoop)
     var currentBeatLoop = 0;
     if (value < 63) {
-        print('Beat loop size backWard: ' + engine.getValue(group, 'beatloop_size'));
         if (beatIdLoop) {
             engine.setValue(group, 'beatloop_size', beatJumps[beatIdLoop - 1]);
             midi.sendShortMsg(0xB0 + channel, 0x50, beatIdLoop - 1);
@@ -284,7 +271,6 @@ TraktorKontrolS4mk1.beatLoopSize = function(channel, control, value, status, gro
 TraktorKontrolS4mk1.MoveFocusForward = function(channel, control, value, status, group) {
     if (value) {
         engine.setValue('[Library]', 'MoveFocusForward', true);
-        print('MoveFocus' + engine.getValue('[Library]', 'MoveFocus'));
     }
 }
 
@@ -293,8 +279,6 @@ TraktorKontrolS4mk1.MoveFocusForward = function(channel, control, value, status,
 // If nothing happends pushing Browse knob function as double click.
 //    This is a trick for opening/closing the Playlist, Procesar and History menues
 TraktorKontrolS4mk1.playStopPreview = function(channel, control, value, status, group) {
-    print('!jumpPrev: ' + !jumpPrev + ', !value: ' + !value + ', PrevDeckStop: ' + engine.getParameter('[PreviewDeck1]', "stop"))
-    print('LoadSelectedTrackAndPlay: ' + engine.getParameter('[PreviewDeck1]', "LoadSelectedTrackAndPlay"))
     if (value) browseKnobPressed = true;
     else browseKnobPressed = false;
     // Preview and on/off on browse knob pressing
@@ -342,7 +326,6 @@ TraktorKontrolS4mk1.browseUpDown = function(channel, control, value, status, gro
 TraktorKontrolS4mk1.maximize_library = function(channel, control, value, status, group) {
     if (value) browseButtonFlag = true;
     else browseButtonFlag = false;
-    print("browseButtonFlag: " + browseButtonFlag);
     if (!value) {
         // Turn off library and resume CUES
         if (libraryStatus) {
@@ -353,7 +336,6 @@ TraktorKontrolS4mk1.maximize_library = function(channel, control, value, status,
             for (var i = 0; i <= 3; i++) {
                 midi.sendShortMsg(0xB0 + i, 0x44, PFLs[i]);
                 engine.setParameter('[Channel' + (i + 1) + ']', "pfl", PFLs[i]);
-                print("PFL" + i + ": " + PFLs[i])
             }
             // Turn off headphones preview
             engine.setValue('[PreviewDeck1]', "stop", true);
@@ -379,7 +361,6 @@ TraktorKontrolS4mk1.PFL = function(channel, control, value, status, group) {
     // Si está activa "Big Library" (o presionado el boton Browse)
     // al presionar el botón pfl ("CUE" en Kontrol S4) 
     // se carga el track seleccionado en el canal correspondiente
-    print("Browse value: " + browseButtonFlag)
     if ((engine.getParameter('[Master]', 'maximize_library') || browseButtonFlag) && value) {
         engine.setValue(group, "LoadSelectedTrack", true);
         // Set gain to center value
@@ -426,7 +407,6 @@ TraktorKontrolS4mk1.setHotCue = function(channel, control, value, status, group)
     if (value == 0)
         return;
 
-    print("setHotCue - Channel: " + channel + " Value: " + value + " Control: " + (control - 10) + " Status: " + status + " Group: " + group + "-");
     if (engine.getValue(group, "hotcue_" + (control - 10) + "_enabled")) {
         engine.setValue(group, "hotcue_" + (control - 10) + "_goto", true);
     } else {
@@ -439,7 +419,6 @@ TraktorKontrolS4mk1.clearHotCue = function(channel, control, value, status, grou
     if (value == 0)
         return;
 
-    print("clearHotCue - Channel: " + channel + " Value: " + value + " Control: " + (control - 40) + " Status: " + status + " Group: " + group + "-");
     if (engine.getValue(group, "hotcue_" + (control - 40) + "_enabled")) {
         engine.setValue(group, "hotcue_" + (control - 40) + "_clear", true);
         midi.sendShortMsg(channel + 0xb0, 0x50 + (control - 40), 0x0);

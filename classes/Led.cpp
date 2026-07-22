@@ -4,6 +4,16 @@
 
 using namespace std;
 
+const int Led::OFF;
+const int Led::LOW;
+const int Led::MIDDLE;
+const int Led::ON;
+const int Led::total_segments;
+const int Led::ch1_digit1_led_dot;
+const int Led::ch1_digit2_led_dot;
+const int Led::ch2_digit1_led_dot;
+const int Led::ch2_digit2_led_dot;
+
 const int Led::numbers[10][Led::total_segments] = {
     {1,1,1,1,1,1,0},
     {0,0,0,0,1,1,0},
