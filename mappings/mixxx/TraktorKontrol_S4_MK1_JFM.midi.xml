@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<MixxxControllerPreset schemaVersion="1" mixxxVersion="2.3.0">
+<MixxxControllerPreset mixxxVersion="2.3.0" schemaVersion="1">
     <info>
         <name>TraktorKontrol_S4_MK1_JFM</name>
         <author>Javier Fonseca</author>
@@ -31,22 +31,22 @@
             </control>
             <control>
                 <group>[Channel3]</group>
-                <key>TraktorKontrolS4mk1.loadSelectedTrack</key>
+                <key>LoadSelectedTrack</key>
                 <description>MIDI Learned from 2 messages.</description>
                 <status>0xB2</status>
                 <midino>0x01</midino>
                 <options>
-                    <script-binding/>
+                    <normal/>
                 </options>
             </control>
             <control>
                 <group>[Channel4]</group>
-                <key>TraktorKontrolS4mk1.loadSelectedTrack</key>
+                <key>LoadSelectedTrack</key>
                 <description>MIDI Learned from 2 messages.</description>
                 <status>0xB3</status>
                 <midino>0x01</midino>
                 <options>
-                    <script-binding/>
+                    <normal/>
                 </options>
             </control>
             <control>
