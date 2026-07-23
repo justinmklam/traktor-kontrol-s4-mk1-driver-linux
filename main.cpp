@@ -81,13 +81,16 @@ static void init_application() {
 
   logger->info("[main::init_application] Starting helpers....");
   evdev_helper = new EvDevHelper(config_helper);
+
+  logger->info("[main::init_application] Waiting for EvDev and ALSA controller devices....");
+  evdev_helper->check_evdev_status();
+
+  // MidiHelper requires the ALSA controller device for LED feedback, so do not
+  // construct it until the controller is connected.
   rtmidi_helper = new MidiHelper(config_helper);
 
   logger->info("[main::init_application] Get MIDI information....");
   MidiHelper::show_midi_information(rtmidi_helper, config_helper);
-
-  logger->info("[main::init_application] Initializing EvDev device....");
-  evdev_helper->check_evdev_status();
 
   logger->info("[main::init_application] Initializing leds....");
   evdev_helper->initialize_buttons_leds(config_helper);
